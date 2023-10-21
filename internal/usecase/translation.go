@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/evrone/go-clean-template/internal/entity"
+	"github.com/mytoolzone/task-mini-program/internal/entity"
 )
 
 // TranslationUseCase -.
