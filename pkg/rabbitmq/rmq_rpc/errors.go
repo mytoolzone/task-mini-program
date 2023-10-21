@@ -6,7 +6,7 @@ var (
 	// ErrTimeout -.
 	ErrTimeout = errors.New("timeout")
 	// ErrInternalServer -.
-	ErrInternalServer = errors.New("internal server error")
+	ErrInternalServer = errors.New("internal server-cmd error")
 	// ErrBadHandler -.
 	ErrBadHandler = errors.New("unregistered handler")
 )

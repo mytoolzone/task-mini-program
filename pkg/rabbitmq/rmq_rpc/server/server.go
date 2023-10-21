@@ -56,7 +56,7 @@ func New(url, serverExchange string, router map[string]CallHandler, l logger.Int
 
 	err := s.conn.AttemptConnect()
 	if err != nil {
-		return nil, fmt.Errorf("rmq_rpc server - NewServer - s.conn.AttemptConnect: %w", err)
+		return nil, fmt.Errorf("rmq_rpc server-cmd - NewServer - s.conn.AttemptConnect: %w", err)
 	}
 
 	go s.consumer()
@@ -95,14 +95,14 @@ func (s *Server) serveCall(d *amqp.Delivery) {
 	if err != nil {
 		s.publish(d, nil, rmqrpc.ErrInternalServer.Error())
 
-		s.logger.Error(err, "rmq_rpc server - Server - serveCall - callHandler")
+		s.logger.Error(err, "rmq_rpc server-cmd - Server - serveCall - callHandler")
 
 		return
 	}
 
 	body, err := json.Marshal(response)
 	if err != nil {
-		s.logger.Error(err, "rmq_rpc server - Server - serveCall - json.Marshal")
+		s.logger.Error(err, "rmq_rpc server-cmd - Server - serveCall - json.Marshal")
 	}
 
 	s.publish(d, body, rmqrpc.Success)
@@ -117,7 +117,7 @@ func (s *Server) publish(d *amqp.Delivery, body []byte, status string) {
 			Body:          body,
 		})
 	if err != nil {
-		s.logger.Error(err, "rmq_rpc server - Server - publish - s.conn.Channel.Publish")
+		s.logger.Error(err, "rmq_rpc server-cmd - Server - publish - s.conn.Channel.Publish")
 	}
 }
 
@@ -155,7 +155,7 @@ func (s *Server) Shutdown() error {
 
 	err := s.conn.Connection.Close()
 	if err != nil {
-		return fmt.Errorf("rmq_rpc server - Server - Shutdown - s.Connection.Close: %w", err)
+		return fmt.Errorf("rmq_rpc server-cmd - Server - Shutdown - s.Connection.Close: %w", err)
 	}
 
 	return nil

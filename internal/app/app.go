@@ -1,4 +1,4 @@
-// Package app configures and runs application.
+// Package server-cmd configures and runs application.
 package app
 
 import (
@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/mytoolzone/task-mini-program/config"
-	amqprpc "github.com/mytoolzone/task-mini-program/internal/controller/amqp_rpc"
 	v1 "github.com/mytoolzone/task-mini-program/internal/controller/http/v1"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 	"github.com/mytoolzone/task-mini-program/internal/usecase/repo"
@@ -18,7 +17,6 @@ import (
 	"github.com/mytoolzone/task-mini-program/pkg/httpserver"
 	"github.com/mytoolzone/task-mini-program/pkg/logger"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
-	"github.com/mytoolzone/task-mini-program/pkg/rabbitmq/rmq_rpc/server"
 )
 
 // Run creates objects via constructors.
@@ -28,7 +26,7 @@ func Run(cfg *config.Config) {
 	// Repository
 	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
 	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
+		l.Fatal(fmt.Errorf("server - Run - postgres.New: %w", err))
 	}
 	defer pg.Close()
 
@@ -37,14 +35,6 @@ func Run(cfg *config.Config) {
 		repo.New(pg),
 		webapi.New(),
 	)
-
-	// RabbitMQ RPC Server
-	rmqRouter := amqprpc.NewRouter(translationUseCase)
-
-	rmqServer, err := server.New(cfg.RMQ.URL, cfg.RMQ.ServerExchange, rmqRouter, l)
-	if err != nil {
-		l.Fatal(fmt.Errorf("app - Run - rmqServer - server.New: %w", err))
-	}
 
 	// HTTP Server
 	handler := gin.New()
@@ -57,21 +47,14 @@ func Run(cfg *config.Config) {
 
 	select {
 	case s := <-interrupt:
-		l.Info("app - Run - signal: " + s.String())
+		l.Info("server - Run - signal: " + s.String())
 	case err = <-httpServer.Notify():
-		l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
-	case err = <-rmqServer.Notify():
-		l.Error(fmt.Errorf("app - Run - rmqServer.Notify: %w", err))
+		l.Error(fmt.Errorf("server - Run - httpServer.Notify: %w", err))
 	}
 
 	// Shutdown
 	err = httpServer.Shutdown()
 	if err != nil {
-		l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
-	}
-
-	err = rmqServer.Shutdown()
-	if err != nil {
-		l.Error(fmt.Errorf("app - Run - rmqServer.Shutdown: %w", err))
+		l.Error(fmt.Errorf("server - Run - httpServer.Shutdown: %w", err))
 	}
 }

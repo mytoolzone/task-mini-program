@@ -1,4 +1,4 @@
-// Package httpserver implements HTTP server.
+// Package httpserver implements HTTP server-cmd.
 package httpserver
 
 import (

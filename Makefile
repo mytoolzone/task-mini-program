@@ -1,4 +1,4 @@
-include .env.example
+include .env
 export
 
 LOCAL_BIN:=$(CURDIR)/bin
@@ -30,7 +30,7 @@ swag-v1: ### swag init
 
 run: swag-v1 ### swag run
 	go mod tidy && go mod download && \
-	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate ./cmd/app
+	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate . server
 .PHONY: run
 
 docker-rm-volume: ### remove docker volume

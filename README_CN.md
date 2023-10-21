@@ -30,13 +30,13 @@ golang服务的整洁架构模板
 ```sh
 # Postgres, RabbitMQ
 $ make compose-up
-# Run app with migrations
+# Run server with migrations
 $ make run
 ```
 
 集成测试（可以在CI中运行）
 ```sh
-# DB, app + migrations, integration tests
+# DB, server + migrations, integration tests
 $ make compose-up-integration-test
 ```
 ## Quick start
@@ -44,7 +44,7 @@ Local development:
 ```sh
 # Postgres, RabbitMQ
 $ make compose-up
-# Run app with migrations
+# Run server with migrations
 $ make run
 ```
 
@@ -87,7 +87,7 @@ Swagger 文档。由  [swag](https://github.com/swaggo/swag) 库自动生成
 `migrate.go` 文件用于是数据库自动构建
 它显示的包扣了 _migrate_ 标签
 ```sh
-$ go run -tags migrate ./cmd/app
+$ go run -tags migrate ./cmd/server-cmd
 ```
 
 ### `internal/controller`

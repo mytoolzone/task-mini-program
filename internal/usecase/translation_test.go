@@ -12,7 +12,7 @@ import (
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 )
 
-var errInternalServErr = errors.New("internal server error")
+var errInternalServErr = errors.New("internal server-cmd error")
 
 type test struct {
 	name string
