@@ -36,9 +36,11 @@ func Run(cfg *config.Config) {
 		webapi.New(),
 	)
 
+	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg))
+
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, l, translationUseCase)
+	v1.NewRouter(handler, l, translationUseCase, userUseCase)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	// Waiting signal

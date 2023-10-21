@@ -26,4 +26,20 @@ type (
 	TranslationWebAPI interface {
 		Translate(entity.Translation) (entity.Translation, error)
 	}
+
+	// User -.
+	User interface {
+		Login(context.Context, entity.User) (entity.User, error)
+		Register(context.Context, entity.User) (entity.User, error)
+		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
+		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
+	}
+
+	// UserRepo -.
+	UserRepo interface {
+		Store(context.Context, entity.User) error
+		GetByUserID(ctx context.Context, userID int) (entity.User, error)
+		GetUserSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
+		UpdateUserSetting(ctx context.Context, userID int, setting entity.UserSetting) error
+	}
 )

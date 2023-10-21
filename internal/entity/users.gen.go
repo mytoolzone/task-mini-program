@@ -12,7 +12,7 @@ const TableNameUser = "users"
 
 // User mapped from table <users>
 type User struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	ID        int     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	Username  string    `gorm:"column:username;not null" json:"username"`
 	Password  string    `gorm:"column:password;not null" json:"password"`
 	Email     string    `gorm:"column:email" json:"email"`
@@ -30,18 +30,3 @@ func (*User) TableName() string {
 	return TableNameUser
 }
 
-// UserSetting 用户的基本信息
-// 年龄 ,学历 , 工作, 个人简介, 个人标签, 个人头像, 个人背景图 , 保险信息, 个人身份证信息, 体重, 身高
-type UserSetting struct {
-	Brithday   time.Time `gorm:"column:brithday" json:"brithday"`
-	Education  string    `gorm:"column:education" json:"education"`
-	Job        string    `gorm:"column:job" json:"job"`
-	Describe   string    `gorm:"column:describe" json:"describe"`
-	Tags       string    `gorm:"column:tags" json:"tags"`
-	Avatar     string    `gorm:"column:avatar" json:"avatar"`
-	Background string    `gorm:"column:background" json:"background"`
-	Insurance  string    `gorm:"column:insurance" json:"insurance"`
-	Card       string    `gorm:"column:card" json:"card"`
-	Weight     string    `gorm:"column:weight" json:"weight"`
-	Height     string    `gorm:"column:height" json:"height"`
-}

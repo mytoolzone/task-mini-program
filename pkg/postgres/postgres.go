@@ -2,12 +2,11 @@
 package postgres
 
 import (
-	"context"
 	"fmt"
-	"log"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"time"
 
-	"github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -23,8 +22,8 @@ type Postgres struct {
 	connAttempts int
 	connTimeout  time.Duration
 
-	Builder squirrel.StatementBuilderType
-	Pool    *pgxpool.Pool
+	Db   *gorm.DB
+	Pool *pgxpool.Pool
 }
 
 // New -.
@@ -40,30 +39,11 @@ func New(url string, opts ...Option) (*Postgres, error) {
 		opt(pg)
 	}
 
-	pg.Builder = squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar)
-
-	poolConfig, err := pgxpool.ParseConfig(url)
-	if err != nil {
-		return nil, fmt.Errorf("postgres - NewPostgres - pgxpool.ParseConfig: %w", err)
-	}
-
-	poolConfig.MaxConns = int32(pg.maxPoolSize)
-
-	for pg.connAttempts > 0 {
-		pg.Pool, err = pgxpool.ConnectConfig(context.Background(), poolConfig)
-		if err == nil {
-			break
-		}
-
-		log.Printf("Postgres is trying to connect, attempts left: %d", pg.connAttempts)
-
-		time.Sleep(pg.connTimeout)
-
-		pg.connAttempts--
-	}
+	var err error
+	pg.Db, err = gorm.Open(postgres.Open(url), &gorm.Config{})
 
 	if err != nil {
-		return nil, fmt.Errorf("postgres - NewPostgres - connAttempts == 0: %w", err)
+		return nil, fmt.Errorf("postgres - NewPostgres  %w", err)
 	}
 
 	return pg, nil
