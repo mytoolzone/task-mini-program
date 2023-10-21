@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"github.com/gw123/glog"
+	"github.com/mytoolzone/task-mini-program/cmd/db"
 	"github.com/mytoolzone/task-mini-program/cmd/server-cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -47,4 +48,5 @@ func init() {
 	}
 
 	RootCmd.AddCommand(server_cmd.ServerCmd)
+	RootCmd.AddCommand(db.GenModel)
 }

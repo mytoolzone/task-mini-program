@@ -1,0 +1,129 @@
+package task_mini_program
+
+// 实现一个小程序的任务系统
+
+/**
+  定义一张用户表 user
+  表字段
+	  id  用户id
+	  username  用户名
+	  password 密码
+	  email 邮箱
+	  phone 手机号
+	  status 状态
+	  createdAt 创建时间
+	  updatedAt 更新时间
+	  deletedAt 删除时间
+	  ext 扩展字段
+索引
+ 	idx_userId (id)
+*/
+
+/**
+定义一张用户角色表 user_role
+表字段
+	id 用户角色id
+	userId 用户id
+	role 角色id
+	createdAt 创建时间
+	updatedAt 更新时间
+*/
+
+/**
+定义一个任务表 task
+表字段
+	id 任务id
+	name      任务名称
+	createBy  发布用户id
+	createdAt 创建时间
+	updatedAt 更新时间
+	endAt    停止时间
+	deletedAt 删除时间
+	desc      任务描述
+	require   任务要求
+	status    任务状态
+*/
+
+/**
+	定义一个任务执行人角色(先报名审核 审核通过安排角色) task_user
+	表字段
+		id 任务执行人id
+		taskId 任务id
+		userId 用户id
+		createdAt 创建时间
+        status 状态 'apply', 'approved', 'rejected'
+		role 角色   'leader', 'member', 'recorder', 'none'
+索引
+	idx_taskId_userId (taskId, userId)
+	idx_userId (userId)
+*/
+
+/**
+定义一个任务报名审核记录表 task_user_audit
+表字段
+	id 自增id
+	taskId 任务id
+	userId 用户id
+	auditUserId 审核人id
+	createdAt 创建时间
+	status 状态 'approved', 'rejected'
+	reason 审核不通过原因
+*/
+
+/**
+定义一个任务执行表 task_run 记录任务执行过程中子任务的执行情况
+表字段
+	id 任务执行id
+	taskId 任务id
+	createdAt 创建时间 开始子任务打卡时间
+	startAt 开始时间   队长点击子任务开始时间
+	endAt 结束时间
+	duration 持续时间
+	status 状态
+
+*/
+
+/**
+定义一个任务执行人记录表 task_run_user 用来记录任务执行人执行时常
+表字段
+	id 自增id
+	taskId 任务id
+	taskRunId 任务执行id
+	userId 用户id
+	duration 持续时间
+	createdAt 创建时间 开始子该队员签到时间
+	startAt  队长点击子任务开始时间
+	endAt 结束时间
+索引
+	idx_taskRunId (taskId)
+    idx_createdAt (createdAt)
+    idx_user_id (userId)
+*/
+
+/**
+定义任务执行日志表 task_run_log 用来记录任务执行过程中的日志
+表字段
+	id 自增id
+    taskId 任务id
+	taskRunId 任务执行id
+	userId 记录用户id
+	content 日志内容
+	createdAt 创建时间
+	images 图片
+	videos 视频
+索引
+	idx_taskRunId (taskRunId)
+    idx_createdAt (createdAt)
+*/
+
+/**
+定义一个通知表 notice
+表字段
+	id        通知id
+	userId    用户id
+	content   通知内容
+    status    状态  'unread', 'read'
+	createdAt 创建时间
+索引
+	idx_created_userId (createdAt , userId)
+*/

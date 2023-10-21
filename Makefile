@@ -30,8 +30,11 @@ swag-v1: ### swag init
 
 run: swag-v1 ### swag run
 	go mod tidy && go mod download && \
-	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate . server
+	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run  . server
 .PHONY: run
+
+gen-model: ### generate model
+	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run  . gen-model
 
 docker-rm-volume: ### remove docker volume
 	docker volume rm go-clean-template_pg-data
