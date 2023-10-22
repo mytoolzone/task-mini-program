@@ -12,10 +12,10 @@ const TableNameTaskRun = "task_runs"
 
 // TaskRun mapped from table <task_runs>
 type TaskRun struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Taskid    int32     `gorm:"column:taskid" json:"taskid"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
-	Startat   time.Time `gorm:"column:startat" json:"startat"`
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	TaskID    int       `gorm:"column:task_id" json:"task_id"`
+	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	StartAt   time.Time `gorm:"column:start_at" json:"start_at"`
 	Endat     time.Time `gorm:"column:endat" json:"endat"`
 	Duration  string    `gorm:"column:duration" json:"duration"`
 	Status    string    `gorm:"column:status" json:"status"`

@@ -12,11 +12,11 @@ const TableNameUserRole = "user_roles"
 
 // UserRole mapped from table <user_roles>
 type UserRole struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Userid    int32     `gorm:"column:userid" json:"userid"`
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	UserID    int       `gorm:"column:user_id" json:"user_id"`
 	Role      string    `gorm:"column:role;not null" json:"role"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
-	Updatedat time.Time `gorm:"column:updatedat" json:"updatedat"`
+	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
 
 // TableName UserRole's table name

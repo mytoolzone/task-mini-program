@@ -12,11 +12,11 @@ const TableNameTaskUserAudit = "task_user_audits"
 
 // TaskUserAudit mapped from table <task_user_audits>
 type TaskUserAudit struct {
-	ID          int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Taskid      int32     `gorm:"column:taskid" json:"taskid"`
-	Userid      int32     `gorm:"column:userid" json:"userid"`
-	Audituserid int32     `gorm:"column:audituserid" json:"audituserid"`
-	Createdat   time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
+	ID          int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	TaskID      int       `gorm:"column:task_id" json:"task_id"`
+	UserID      int       `gorm:"column:user_id" json:"user_id"`
+	AuditUserID int       `gorm:"column:audit_user_id" json:"audit_user_id"`
+	CreatedAt   time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	Status      string    `gorm:"column:status" json:"status"`
 	Reason      string    `gorm:"column:reason" json:"reason"`
 }

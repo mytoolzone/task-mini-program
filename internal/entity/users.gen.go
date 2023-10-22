@@ -6,27 +6,28 @@ package entity
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 const TableNameUser = "users"
 
 // User mapped from table <users>
 type User struct {
-	ID        int     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Username  string    `gorm:"column:username;not null" json:"username"`
-	Password  string    `gorm:"column:password;not null" json:"password"`
-	Email     string    `gorm:"column:email" json:"email"`
-	Phone     string    `gorm:"column:phone" json:"phone"`
-	Status    string    `gorm:"column:status" json:"status"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
-	Updatedat time.Time `gorm:"column:updatedat" json:"updatedat"`
-	Deletedat time.Time `gorm:"column:deletedat" json:"deletedat"`
-	Ext       string    `gorm:"column:ext" json:"ext"`
-	Openid    string    `gorm:"column:openid" json:"openid"`
+	ID        int            `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Username  string         `gorm:"column:username;not null" json:"username"`
+	Password  string         `gorm:"column:password;not null" json:"password"`
+	Email     string         `gorm:"column:email" json:"email"`
+	Phone     string         `gorm:"column:phone" json:"phone"`
+	Status    string         `gorm:"column:status" json:"status"`
+	CreatedAt time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	Openid    string         `gorm:"column:openid" json:"openid"`
+	Ext       string         `gorm:"column:ext" json:"ext"`
 }
 
 // TableName User's table name
 func (*User) TableName() string {
 	return TableNameUser
 }
-

@@ -12,10 +12,10 @@ const TableNameTaskUser = "task_users"
 
 // TaskUser mapped from table <task_users>
 type TaskUser struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Taskid    int32     `gorm:"column:taskid" json:"taskid"`
-	Userid    int32     `gorm:"column:userid" json:"userid"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	TaskID    int       `gorm:"column:task_id" json:"task_id"`
+	UserID    int       `gorm:"column:user_id" json:"user_id"`
+	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	Status    string    `gorm:"column:status" json:"status"`
 	Role      string    `gorm:"column:role" json:"role"`
 }

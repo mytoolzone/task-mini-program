@@ -12,11 +12,11 @@ const TableNameNotice = "notices"
 
 // Notice mapped from table <notices>
 type Notice struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Userid    int32     `gorm:"column:userid" json:"userid"`
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	UserID    int       `gorm:"column:user_id" json:"user_id"`
 	Content   string    `gorm:"column:content;not null" json:"content"`
 	Status    string    `gorm:"column:status" json:"status"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
+	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 }
 
 // TableName Notice's table name

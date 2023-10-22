@@ -8,7 +8,9 @@ const (
 	ErrorTaskNotFound      ErrorType = "task_not_found"
 	ErrorTaskExist         ErrorType = "task_exist"
 	ErrorBadRequest        ErrorType = "bad_request"
+	ErrorAuditParamInValid ErrorType = "audit_param_invalid"
 	ErrorNotFound          ErrorType = "not_found"
+	ErrorTaskRunNotFound   ErrorType = "task_run_not_found"
 )
 
 type ErrorType string

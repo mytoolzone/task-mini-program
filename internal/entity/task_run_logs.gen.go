@@ -12,12 +12,12 @@ const TableNameTaskRunLog = "task_run_logs"
 
 // TaskRunLog mapped from table <task_run_logs>
 type TaskRunLog struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Taskid    int32     `gorm:"column:taskid" json:"taskid"`
-	Taskrunid int32     `gorm:"column:taskrunid" json:"taskrunid"`
-	Userid    int32     `gorm:"column:userid" json:"userid"`
+	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	TaskID    int       `gorm:"column:task_id" json:"task_id"`
+	TaskRunID int       `gorm:"column:task_run_id" json:"task_run_id"`
+	UserID    int       `gorm:"column:user_id" json:"user_id"`
 	Content   string    `gorm:"column:content" json:"content"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
+	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	Images    string    `gorm:"column:images" json:"images"`
 	Videos    string    `gorm:"column:videos" json:"videos"`
 }

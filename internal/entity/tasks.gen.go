@@ -6,23 +6,25 @@ package entity
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 const TableNameTask = "tasks"
 
 // Task mapped from table <tasks>
 type Task struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Name      string    `gorm:"column:name;not null" json:"name"`
-	Createby  int32     `gorm:"column:createby" json:"createby"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
-	Updatedat time.Time `gorm:"column:updatedat" json:"updatedat"`
-	Endat     time.Time `gorm:"column:endat" json:"endat"`
-	Deletedat time.Time `gorm:"column:deletedat" json:"deletedat"`
-	Describe  string    `gorm:"column:describe" json:"describe"`
-	Require   string    `gorm:"column:require" json:"require"`
-	Status    string    `gorm:"column:status" json:"status"`
-	Location  string    `gorm:"column:location;comment:发布任务的位置" json:"location"` // 发布任务的位置
+	ID         int            `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Name       string         `gorm:"column:name;not null" json:"name"`
+	CreateBy   int            `gorm:"column:create_by" json:"create_by"`
+	CreatedAt  time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at" json:"updated_at"`
+	FinishedAt time.Time      `gorm:"column:finished_at" json:"finished_at"`
+	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	Describe   string         `gorm:"column:describe" json:"describe"`
+	Require    string         `gorm:"column:require" json:"require"`
+	Location   string         `gorm:"column:location" json:"location"`
+	Status     string         `gorm:"column:status" json:"status"`
 }
 
 // TableName Task's table name

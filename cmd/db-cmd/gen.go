@@ -1,4 +1,4 @@
-package db
+package db_cmd
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ var GenModel = &cobra.Command{
 		if err != nil {
 			fmt.Errorf("gorm.Open err:%s", err.Error())
 		}
-		g.UseDB(gormdb) // reuse your gorm db
+		g.UseDB(gormdb) // reuse your gorm db-cmd
 		g.GenerateAllTable()
 		// Generate the code
 		g.Execute()

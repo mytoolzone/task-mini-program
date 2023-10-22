@@ -12,14 +12,14 @@ const TableNameTaskRunUser = "task_run_users"
 
 // TaskRunUser mapped from table <task_run_users>
 type TaskRunUser struct {
-	ID        int32     `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
-	Taskid    int32     `gorm:"column:taskid" json:"taskid"`
-	Taskrunid int32     `gorm:"column:taskrunid" json:"taskrunid"`
-	Userid    int32     `gorm:"column:userid" json:"userid"`
-	Duration  string    `gorm:"column:duration" json:"duration"`
-	Createdat time.Time `gorm:"column:createdat;default:CURRENT_TIMESTAMP" json:"createdat"`
-	Startat   time.Time `gorm:"column:startat" json:"startat"`
-	Endat     time.Time `gorm:"column:endat" json:"endat"`
+	ID         int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	TaskID     int       `gorm:"column:task_id" json:"task_id"`
+	TaskRunID  int       `gorm:"column:task_run_id" json:"task_run_id"`
+	UserID     int       `gorm:"column:user_id" json:"user_id"`
+	Duration   string    `gorm:"column:duration" json:"duration"`
+	CreatedAt  time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	StartAt    time.Time `gorm:"column:start_at" json:"start_at"`
+	FinishedAt time.Time `gorm:"column:finished_at" json:"finished_at"`
 }
 
 // TableName TaskRunUser's table name
