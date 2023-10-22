@@ -67,6 +67,16 @@ func (t TaskRun) FinishTaskRun(ctx context.Context, taskID int) error {
 	return t.Db.WithContext(ctx).Where("task_id = ?", taskID).Updates(&taskRun).Error
 }
 
+func (t TaskRun) CancelTaskRun(ctx context.Context, taskID int) error {
+	var taskRun entity.TaskRun
+	err := t.Db.WithContext(ctx).Where("task_id = ? and status = ?", taskID, entity.TaskStatusRunning).First(&taskRun).Error
+	if err != nil {
+		return err
+	}
+	taskRun.Status = entity.TaskStatusCanceled
+	return t.Db.WithContext(ctx).Where("task_id = ?", taskID).Updates(&taskRun).Error
+}
+
 func (t TaskRun) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error) {
 	var taskRuns []entity.TaskRun
 	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&taskRuns).Error

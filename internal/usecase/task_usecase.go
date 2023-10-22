@@ -13,11 +13,15 @@ type TaskUseCase struct {
 	tr  TaskRunRepo
 	tru TaskRunUserRepo
 	trl TaskRunLogRepo
-	tu  TaskUserRepo
+	tu  UserTaskRepo
 }
 
 func (t TaskUseCase) CreateTask(ctx context.Context, task entity.Task) error {
 	return t.t.CreateTask(ctx, &task)
+}
+
+func (t TaskUseCase) GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error) {
+	return t.t.GetByTaskID(ctx, taskID)
 }
 
 func (t TaskUseCase) GetByUserID(ctx context.Context, userID int) ([]entity.Task, error) {
@@ -32,8 +36,8 @@ func (t TaskUseCase) GetTaskList(ctx context.Context, lastId int) ([]entity.Task
 	return t.GetTaskList(ctx, lastId)
 }
 
-func (t TaskUseCase) GetTaskUsers(ctx context.Context, taskID int) ([]entity.TaskUser, error) {
-	return t.tu.GetTaskUserList(ctx, taskID)
+func (t TaskUseCase) GetUserTasks(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+	return t.tu.GetUserTaskList(ctx, taskID)
 }
 
 func (t TaskUseCase) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error) {
@@ -42,6 +46,10 @@ func (t TaskUseCase) GetTaskRunList(ctx context.Context, taskID int) ([]entity.T
 
 func (t TaskUseCase) GetTaskRunLogList(ctx context.Context, taskID int) ([]entity.TaskRunLog, error) {
 	return t.trl.GetTaskRunLogList(ctx, taskID)
+}
+
+func (t TaskUseCase) UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error {
+	return t.trl.AddTaskRunLog(ctx, &runLog)
 }
 
 func (t TaskUseCase) PrepareTaskRun(ctx context.Context, taskID int) (int, error) {
@@ -145,4 +153,80 @@ func (t TaskUseCase) FinishTaskRun(ctx context.Context, taskID int) error {
 	}
 
 	return nil
+}
+
+func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
+	task, err := t.t.GetByTaskID(ctx, taskID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return app_error.New(app_error.ErrorTaskRunNotFound, "任务不存在")
+		}
+		return err
+	}
+
+	if task.Status == entity.TaskStatusRunning {
+		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return app_error.New(app_error.ErrorTaskRunNotFound, "没有正在执行中任务")
+			}
+			return err
+		}
+
+		if err := t.tr.CancelTaskRun(ctx, taskID); err != nil {
+			return err
+		}
+		err = t.tru.CancelTaskRun(ctx, taskID, run.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = t.t.CancelTask(ctx, taskID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (t TaskUseCase) AuditTask(ctx context.Context, taskID int, status string) error {
+	var err error
+	switch status {
+	case entity.TaskStatusAuditFail:
+		err = t.t.AuditFailTask(ctx, taskID)
+
+	case entity.TaskStatusAuditPass:
+		err = t.t.AuditSuccessTask(ctx, taskID)
+
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t TaskUseCase) JoinTask(ctx context.Context, taskID, userID int) error {
+	_, err := t.tu.AddUserTask(ctx, taskID, userID)
+	return err
+}
+
+func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, status string) error {
+	var err error
+	switch status {
+	case entity.UserTaskStatusAuditFail:
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+
+	case entity.UserTaskStatusAuditPass:
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummary(ctx, userID)
 }

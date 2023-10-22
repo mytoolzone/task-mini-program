@@ -7,52 +7,52 @@ import (
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
 )
 
-type TaskUserRepo struct {
+type UserTaskRepo struct {
 	*postgres.Postgres
 }
 
-func NewTaskUserRepo(pg *postgres.Postgres) *TaskUserRepo {
-	return &TaskUserRepo{pg}
+func NewUserTaskRepo(pg *postgres.Postgres) *UserTaskRepo {
+	return &UserTaskRepo{pg}
 }
 
-func (t TaskUserRepo) AddTaskUser(ctx context.Context, taskID, userID int) (entity.TaskUser, error) {
-	var taskUser entity.TaskUser = entity.TaskUser{
+func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
+	var UserTask entity.UserTask = entity.UserTask{
 		TaskID: taskID,
 		UserID: userID,
 		Status: entity.UserTaskStatusApply,
 	}
-	if err := t.Db.WithContext(ctx).Create(&taskUser).Error; err != nil {
-		return entity.TaskUser{}, err
+	if err := t.Db.WithContext(ctx).Create(&UserTask).Error; err != nil {
+		return entity.UserTask{}, err
 	}
-	return taskUser, nil
+	return UserTask, nil
 }
 
-func (t TaskUserRepo) AuditTaskUser(ctx context.Context, taskID, userID int, status string) (entity.TaskUser, error) {
+func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error) {
 	if status != entity.UserTaskStatusAuditFail && status != entity.UserTaskStatusAuditPass {
-		return entity.TaskUser{}, app_error.New(app_error.ErrorAuditParamInValid, "status invalid")
+		return entity.UserTask{}, app_error.New(app_error.ErrorAuditParamInValid, "status invalid")
 	}
 
-	var taskUser entity.TaskUser = entity.TaskUser{
+	var UserTask entity.UserTask = entity.UserTask{
 		TaskID: taskID,
 		UserID: userID,
 		Status: status,
 	}
 
-	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Updates(&taskUser).Error; err != nil {
-		return entity.TaskUser{}, err
+	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Updates(&UserTask).Error; err != nil {
+		return entity.UserTask{}, err
 	}
-	return taskUser, nil
+	return UserTask, nil
 }
 
-func (t TaskUserRepo) GetTaskUserList(ctx context.Context, taskID int) ([]entity.TaskUser, error) {
-	var taskUsers []entity.TaskUser
-	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&taskUsers).Error
-	return taskUsers, err
+func (t UserTaskRepo) GetUserTaskList(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+	var UserTasks []entity.UserTask
+	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&UserTasks).Error
+	return UserTasks, err
 }
 
-// GetTaskUserByUserID 获取某个人参与的任务的状态
-func (t TaskUserRepo) GetTaskUserByUserID(ctx context.Context, taskID, userID int) (entity.TaskUser, error) {
-	var taskUser entity.TaskUser
-	err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&taskUser).Error
-	return taskUser, err
+// GetUserTaskByUserID 获取某个人参与的任务的状态
+func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
+	var UserTask entity.UserTask
+	err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&UserTask).Error
+	return UserTask, err
 }

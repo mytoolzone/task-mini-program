@@ -11,6 +11,7 @@ const (
 	ErrorAuditParamInValid ErrorType = "audit_param_invalid"
 	ErrorNotFound          ErrorType = "not_found"
 	ErrorTaskRunNotFound   ErrorType = "task_run_not_found"
+	ErrorCreateTask        ErrorType = "create_task"
 )
 
 type ErrorType string

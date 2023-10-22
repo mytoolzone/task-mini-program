@@ -85,6 +85,16 @@ func (t *TaskRepo) FinishTask(ctx context.Context, taskID int) error {
 	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 }
 
+func (t *TaskRepo) CancelTask(ctx context.Context, taskID int) error {
+	var task entity.Task
+	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
+	if err != nil {
+		return err
+	}
+	task.Status = entity.TaskStatusCanceled
+	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
+}
+
 func NewTaskRepo(pg *postgres.Postgres) *TaskRepo {
 	return &TaskRepo{pg}
 }

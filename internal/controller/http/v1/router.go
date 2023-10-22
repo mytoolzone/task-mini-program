@@ -25,7 +25,10 @@ import (
 func NewRouter(handler *gin.Engine,
 	l logger.Interface,
 	t usecase.Translation,
-	u usecase.User) {
+	u usecase.User,
+	tk usecase.Task,
+	n usecase.Notice,
+) {
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -45,6 +48,8 @@ func NewRouter(handler *gin.Engine,
 	{
 		newTranslationRoutes(h, t, l)
 		newUserRoutes(h, u)
+		newTaskRoutes(h, tk)
+		newNoticeRoutes(h, n)
 	}
 
 }

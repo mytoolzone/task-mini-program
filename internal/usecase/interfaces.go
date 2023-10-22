@@ -47,19 +47,14 @@ type (
 	// 开始签到 -> 签到 -> 开始子任务执行 -> 上传子任务记录 -> 完成任务 -> 子任务完成
 	// -> 完成任务
 	Task interface {
+		// CreateTask 创建任务
 		CreateTask(context.Context, entity.Task) error
-		// GetByUserID 获取一个人参与的任务
-		GetByUserID(ctx context.Context, userID int) ([]entity.Task, error)
-		// GetByTaskID 获取一个任务的详情
-		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
-		// GetTaskList 任务大厅获取任务列表
-		GetTaskList(ctx context.Context, lastId int) ([]entity.Task, error)
-		// GetTaskUsers 获取任务参与者列表
-		GetTaskUsers(ctx context.Context, taskID int) ([]entity.TaskUser, error)
-		// GetTaskRunList 获取某个任务的子任务列表
-		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
-		// GetTaskRunLogList 获取某个任务的记录员上传的任务记录
-		GetTaskRunLogList(ctx context.Context, taskID int) ([]entity.TaskRunLog, error)
+		// AuditTask 审核任务是否通过
+		AuditTask(ctx context.Context, taskID int, status string) error
+		// JoinTask 报名任务
+		JoinTask(ctx context.Context, taskID, userID int) error
+		// AuditUserTask 审核报名人员
+		AuditUserTask(ctx context.Context, taskID, userID int, status string) error
 		// PrepareTaskRun 准备开始子任务 返回子任务id 后续签到生产二维码使用 ,队长点击开始签到调用这个接口
 		// 1. 如果是第一次调用,则创建子任务
 		// 2. 如果子任务没有完成 返回未完成子任务
@@ -72,6 +67,26 @@ type (
 		PauseTaskRun(ctx context.Context, taskID int) error
 		// FinishTaskRun 完成子任务执行
 		FinishTaskRun(ctx context.Context, taskID int) error
+		// CancelTaskRun 取消子任务执行
+		CancelTaskRun(ctx context.Context, taskID int) error
+		// GetTaskDetail 获取任务详情
+		GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error)
+		// GetByUserID 获取一个人参与的任务
+		GetByUserID(ctx context.Context, userID int) ([]entity.Task, error)
+		// GetByTaskID 获取一个任务的详情
+		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
+		// GetTaskList 任务大厅获取任务列表
+		GetTaskList(ctx context.Context, lastId int) ([]entity.Task, error)
+		// GetUserTasks 获取任务参与者列表
+		GetUserTasks(ctx context.Context, taskID int) ([]entity.UserTask, error)
+		// GetTaskRunList 获取某个任务的子任务列表
+		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
+		// GetTaskRunLogList 获取某个任务的记录员上传的任务记录
+		GetTaskRunLogList(ctx context.Context, taskID int) ([]entity.TaskRunLog, error)
+		// UploadRunLog 记录员上传任务记录
+		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
+		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
+		GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error)
 	}
 
 	// TaskRepo -.
@@ -86,6 +101,7 @@ type (
 		StartTask(ctx context.Context, taskID int) error
 		PauseTask(ctx context.Context, taskID int) error
 		FinishTask(ctx context.Context, taskID int) error
+		CancelTask(ctx context.Context, taskID int) error
 	}
 
 	// TaskRunRepo -.
@@ -97,6 +113,7 @@ type (
 		StartTaskRun(ctx context.Context, taskID int) error
 		FinishTaskRun(ctx context.Context, taskID int) error
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
+		CancelTaskRun(ctx context.Context, id int) error
 	}
 
 	// TaskRunLogRepo -.
@@ -116,19 +133,21 @@ type (
 		// FinishTaskRun 完成子任务执行时候调用
 		FinishTaskRun(ctx context.Context, taskID, taskRunID int) error
 		GetTaskRunUserList(ctx context.Context, taskID int) ([]entity.TaskRunUser, error)
+		CancelTaskRun(ctx context.Context, id int, id2 int) error
+		GetUserTaskSummary(ctx context.Context, id int) (entity.UserTaskSummary, error)
 	}
 
-	// TaskUserRepo -.
+	// UserTaskRepo -.
 	// 任务参与者
-	TaskUserRepo interface {
-		// AddTaskUser 用户报名参与任务
-		AddTaskUser(ctx context.Context, taskID, userID int) (entity.TaskUser, error)
-		// AuditTaskUser 审核任务参与者
-		AuditTaskUser(ctx context.Context, taskID, userID int, status string) (entity.TaskUser, error)
-		// GetTaskUserList 获取任务参与者列表
-		GetTaskUserList(ctx context.Context, taskID int) ([]entity.TaskUser, error)
-		// GetTaskUserByUserID 获取任务参与者状态
-		GetTaskUserByUserID(ctx context.Context, taskID, userID int) (entity.TaskUser, error)
+	UserTaskRepo interface {
+		// AddUserTask 用户报名参与任务
+		AddUserTask(ctx context.Context, taskID, userID int) (entity.UserTask, error)
+		// AuditUserTask 审核任务参与者
+		AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error)
+		// GetUserTaskList 获取任务参与者列表
+		GetUserTaskList(ctx context.Context, taskID int) ([]entity.UserTask, error)
+		// GetUserTaskByUserID 获取任务参与者状态
+		GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 	}
 
 	// Notice -.

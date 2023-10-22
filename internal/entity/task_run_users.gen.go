@@ -20,6 +20,7 @@ type TaskRunUser struct {
 	CreatedAt  time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	StartAt    time.Time `gorm:"column:start_at" json:"start_at"`
 	FinishedAt time.Time `gorm:"column:finished_at" json:"finished_at"`
+	Status     string    `gorm:"column:status" json:"status"`
 }
 
 // TableName TaskRunUser's table name

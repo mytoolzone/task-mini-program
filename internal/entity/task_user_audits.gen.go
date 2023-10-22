@@ -8,10 +8,10 @@ import (
 	"time"
 )
 
-const TableNameTaskUserAudit = "task_user_audits"
+const TableNameUserTaskAudit = "task_user_audits"
 
-// TaskUserAudit mapped from table <task_user_audits>
-type TaskUserAudit struct {
+// UserTaskAudit mapped from table <task_user_audits>
+type UserTaskAudit struct {
 	ID          int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
 	TaskID      int       `gorm:"column:task_id" json:"task_id"`
 	UserID      int       `gorm:"column:user_id" json:"user_id"`
@@ -21,7 +21,7 @@ type TaskUserAudit struct {
 	Reason      string    `gorm:"column:reason" json:"reason"`
 }
 
-// TableName TaskUserAudit's table name
-func (*TaskUserAudit) TableName() string {
-	return TableNameTaskUserAudit
+// TableName UserTaskAudit's table name
+func (*UserTaskAudit) TableName() string {
+	return TableNameUserTaskAudit
 }
