@@ -11,6 +11,7 @@ type (
 		HTTP `yaml:"http"`
 		Log  `yaml:"logger"`
 		PG   `yaml:"postgres"`
+		JWT  `yaml:"jwt"`
 		//RMQ  `yaml:"rabbitmq"`
 	}
 
@@ -34,6 +35,12 @@ type (
 	PG struct {
 		PoolMax int    `yaml:"pool_max" env:"PG_POOL_MAX" `
 		URL     string `               env:"PG_URL"`
+	}
+
+	// JWT -.
+	JWT struct {
+		Secret string `yaml:"secret" env:"JWT_SECRET"`
+		Expire int    `yaml:"expire" env:"JWT_EXPIRE"`
 	}
 )
 

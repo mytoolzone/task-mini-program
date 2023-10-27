@@ -18,9 +18,9 @@ type Task struct {
 	Name       string         `gorm:"column:name;not null" json:"name"`
 	CreateBy   int            `gorm:"column:create_by" json:"create_by"`
 	CreatedAt  time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt  time.Time      `gorm:"column:updated_at" json:"updated_at"`
-	FinishedAt time.Time      `gorm:"column:finished_at" json:"finished_at"`
-	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
+	UpdatedAt  time.Time      `gorm:"column:updated_at" json:"updated_at" swaggerignore:"true"`
+	FinishedAt time.Time      `gorm:"column:finished_at" json:"finished_at" `
+	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" swaggerignore:"true"`
 	Describe   string         `gorm:"column:describe" json:"describe"`
 	Require    string         `gorm:"column:require" json:"require"`
 	Location   string         `gorm:"column:location" json:"location"`

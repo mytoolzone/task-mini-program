@@ -10,7 +10,7 @@ type TaskRun struct {
 	*postgres.Postgres
 }
 
-func NewTaskRun(pg *postgres.Postgres) *TaskRun {
+func NewTaskRunRepo(pg *postgres.Postgres) *TaskRun {
 	return &TaskRun{pg}
 }
 

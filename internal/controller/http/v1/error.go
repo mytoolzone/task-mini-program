@@ -3,7 +3,7 @@ package v1
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"github.com/mytoolzone/task-mini-program/internal/app_error"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"net/http"
 )
 
@@ -12,7 +12,7 @@ type response struct {
 }
 
 func errorResponse(c *gin.Context, err error) {
-	var appErr app_error.AppError
+	var appErr app_code.AppError
 	ok := errors.As(err, &appErr)
 	if !ok {
 		c.AbortWithStatusJSON(http.StatusBadRequest, response{err.Error()})
@@ -21,14 +21,14 @@ func errorResponse(c *gin.Context, err error) {
 
 	statusCode := http.StatusInternalServerError
 	switch appErr.Code {
-	case app_error.ErrorBadRequest:
+	case app_code.ErrorBadRequest:
 		statusCode = http.StatusBadRequest
-	case app_error.ErrorNotFound:
-	case app_error.ErrorUserNotFound:
-	case app_error.ErrorTaskNotFound:
+	case app_code.ErrorNotFound:
+	case app_code.ErrorUserNotFound:
+	case app_code.ErrorTaskNotFound:
 		statusCode = http.StatusNotFound
-	case app_error.ErrorTaskExist:
-	case app_error.ErrorUserExist:
+	case app_code.ErrorTaskExist:
+	case app_code.ErrorUserExist:
 		statusCode = http.StatusConflict
 	}
 

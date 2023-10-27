@@ -2,6 +2,8 @@
 package v1
 
 import (
+	"github.com/mytoolzone/task-mini-program/internal/controller/http/middleware"
+	"github.com/mytoolzone/task-mini-program/pkg/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,17 +19,17 @@ import (
 
 // NewRouter -.
 // Swagger spec:
-// @title       Go Clean Template API
-// @description Using a translation service as an example
+// @title       Task Mini Program
+// @description Task Mini Program API
 // @version     1.0
 // @host        localhost:8080
 // @BasePath    /v1
 func NewRouter(handler *gin.Engine,
 	l logger.Interface,
-	t usecase.Translation,
 	u usecase.User,
 	tk usecase.Task,
 	n usecase.Notice,
+	auth auth.Auth,
 ) {
 	// Options
 	handler.Use(gin.Logger())
@@ -44,12 +46,11 @@ func NewRouter(handler *gin.Engine,
 	handler.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	// Routers
-	h := handler.Group("/v1")
+	hl := handler.Group("/v1")
+	jwt := middleware.JWT(auth)
 	{
-		newTranslationRoutes(h, t, l)
-		newUserRoutes(h, u)
-		newTaskRoutes(h, tk)
-		newNoticeRoutes(h, n)
+		newTaskRoutes(hl, jwt, tk)
+		newUserRoutes(hl, jwt, auth, u)
+		newNoticeRoutes(hl, jwt, n)
 	}
-
 }

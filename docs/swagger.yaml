@@ -1,105 +1,944 @@
 basePath: /v1
 definitions:
-  entity.Translation:
+  app_code.CodeType:
+    enum:
+    - success
+    - user_not_found
+    - password_error
+    - service_error
+    - auth_failed
+    - token_not_set
+    - token_timeout
+    - forbidden
+    - user_exist
+    - update_user_setting
+    - get_user_setting
+    - task_not_found
+    - task_exist
+    - bad_request
+    - audit_param_invalid
+    - not_found
+    - task_run_not_found
+    - create_task
+    type: string
+    x-enum-varnames:
+    - Success
+    - ErrorUserNotFound
+    - ErrorUserPassword
+    - ErrorServerError
+    - ErrorAuthFailed
+    - ErrorTokenNotSet
+    - ErrorTokenTimeout
+    - ErrorForbidden
+    - ErrorUserExist
+    - ErrorUpdateUserSetting
+    - ErrorGetUserSetting
+    - ErrorTaskNotFound
+    - ErrorTaskExist
+    - ErrorBadRequest
+    - ErrorAuditParamInValid
+    - ErrorNotFound
+    - ErrorTaskRunNotFound
+    - ErrorCreateTask
+  entity.Notice:
     properties:
-      destination:
-        example: en
+      content:
         type: string
-      original:
-        example: текст для перевода
+      created_at:
         type: string
-      source:
-        example: auto
+      id:
+        type: integer
+      status:
         type: string
-      translation:
-        example: text for translation
+      user_id:
+        type: integer
+    type: object
+  entity.Task:
+    properties:
+      create_by:
+        type: integer
+      created_at:
+        type: string
+      describe:
+        type: string
+      finished_at:
+        type: string
+      id:
+        type: integer
+      location:
+        type: string
+      name:
+        type: string
+      require:
+        type: string
+      status:
         type: string
     type: object
-  v1.doTranslateRequest:
+  entity.TaskRun:
     properties:
-      destination:
-        example: en
+      created_at:
         type: string
-      original:
-        example: текст для перевода
+      duration:
         type: string
-      source:
-        example: auto
+      endat:
+        type: string
+      id:
+        type: integer
+      start_at:
+        type: string
+      status:
+        type: string
+      task_id:
+        type: integer
+    type: object
+  entity.TaskRunLog:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      images:
+        type: string
+      task_id:
+        type: integer
+      task_run_id:
+        type: integer
+      user_id:
+        type: integer
+      videos:
+        type: string
+    type: object
+  entity.UserSetting:
+    properties:
+      avatar:
+        type: string
+      background:
+        type: string
+      birthday:
+        type: string
+      card:
+        type: string
+      describe:
+        type: string
+      education:
+        type: string
+      height:
+        type: string
+      insurance:
+        type: string
+      job:
+        type: string
+      tags:
+        type: string
+      weight:
+        type: string
+    type: object
+  entity.UserTask:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      status:
+        type: string
+      task_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
+  entity.UserTaskSummary:
+    properties:
+      total_duration:
+        type: integer
+      total_task:
+        type: integer
+    type: object
+  http_util.Response:
+    properties:
+      code:
+        allOf:
+        - $ref: '#/definitions/app_code.CodeType'
+        example: success
+      data: {}
+      error:
+        example: error message
+        type: string
+    type: object
+  v1.doLoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  v1.doRegisterRequest:
+    properties:
+      password:
+        type: string
+      phone:
+        type: string
+      setting:
+        $ref: '#/definitions/entity.UserSetting'
+      username:
         type: string
     required:
-    - destination
-    - original
-    - source
-    type: object
-  v1.historyResponse:
-    properties:
-      history:
-        items:
-          $ref: '#/definitions/entity.Translation'
-        type: array
-    type: object
-  v1.response:
-    properties:
-      error:
-        example: message
-        type: string
+    - password
+    - username
     type: object
 host: localhost:8080
 info:
   contact: {}
-  description: Using a translation service as an example
-  title: Go Clean Template API
+  description: Task Mini Program API
+  title: Task Mini Program
   version: "1.0"
 paths:
-  /translation/do-translate:
-    post:
-      consumes:
-      - application/json
-      description: Translate a text
-      operationId: do-translate
-      parameters:
-      - description: Set up translation
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/v1.doTranslateRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entity.Translation'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/v1.response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/v1.response'
-      summary: Translate
-      tags:
-      - translation
-  /translation/history:
+  /notice/detail:
     get:
       consumes:
       - application/json
-      description: Show all translation history
-      operationId: history
+      description: 获取用户通知详情
+      parameters:
+      - description: 通知ID
+        in: query
+        name: noticeID
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.historyResponse'
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.Notice'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/v1.response'
-      summary: Show history
+            $ref: '#/definitions/http_util.Response'
+      summary: 获取用户通知详情
       tags:
-      - translation
+      - 通知
+  /notice/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户通知列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.Notice'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 获取用户通知列表
+      tags:
+      - 通知
+  /task/apply:
+    post:
+      consumes:
+      - application/json
+      description: 用户申请参加任务
+      operationId: apply-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Apply task
+      tags:
+      - task
+  /task/auditTask:
+    post:
+      consumes:
+      - application/json
+      description: 管理员审核任务
+      operationId: audit-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      - description: auditStatus
+        in: query
+        name: auditStatus
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Audit task
+      tags:
+      - task
+  /task/auditUserTask:
+    post:
+      consumes:
+      - application/json
+      description: 管理员审核用户参加任务
+      operationId: audit-user-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      - description: auditStatus
+        in: query
+        name: auditStatus
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Audit user task
+      tags:
+      - task
+  /task/cancel:
+    post:
+      consumes:
+      - application/json
+      description: 取消任务
+      operationId: cancel-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Cancel task
+      tags:
+      - task
+  /task/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建任务
+      operationId: create-task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Create task
+      tags:
+      - task
+  /task/detail:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务详情
+      operationId: detail
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.Task'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Show task detail
+      tags:
+      - task
+  /task/finish:
+    post:
+      consumes:
+      - application/json
+      description: 完成任务
+      operationId: finish-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Finish task
+      tags:
+      - task
+  /task/list:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务列表
+      operationId: list
+      parameters:
+      - description: lastId
+        in: query
+        name: lastId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.Task'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: List tasks
+      tags:
+      - task
+  /task/pause:
+    post:
+      consumes:
+      - application/json
+      description: 暂停任务
+      operationId: pause-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Pause task
+      tags:
+      - task
+  /task/prepare:
+    get:
+      consumes:
+      - application/json
+      description: 获取签到二维码
+      operationId: prepare-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.TaskRun'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Prepare task
+      tags:
+      - task
+  /task/runLogs:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务运行日志列表
+      operationId: run-log-list
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      - description: lastId
+        in: query
+        name: lastId
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.TaskRunLog'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Run log list
+      tags:
+      - task
+  /task/sign:
+    post:
+      consumes:
+      - application/json
+      description: 签到
+      operationId: sign-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      - description: taskRunID
+        in: query
+        name: taskRunID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Sign task
+      tags:
+      - task
+  /task/start:
+    post:
+      consumes:
+      - application/json
+      description: 开始任务
+      operationId: start-task
+      parameters:
+      - description: taskID
+        in: query
+        name: taskRunID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Start task
+      tags:
+      - task
+  /task/uploadRunLog:
+    post:
+      consumes:
+      - application/json
+      description: 上报任务运行日志列表
+      operationId: upload-run-log
+      parameters:
+      - description: 上报任务运行日志
+        in: body
+        name: jsonBody
+        required: true
+        schema:
+          $ref: '#/definitions/entity.TaskRunLog'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Upload run log
+      tags:
+      - task
+  /task/userTasks:
+    get:
+      consumes:
+      - application/json
+      description: 获取某人任务列表
+      operationId: user-task-list
+      parameters:
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.Task'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: User task list
+      tags:
+      - task
+  /task/users:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务用户列表
+      operationId: user-list
+      parameters:
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.UserTask'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: User list
+      tags:
+      - task
+  /user/getSetting:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户设置
+      parameters:
+      - description: 用户ID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserSetting'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 获取用户设置
+      tags:
+      - 用户
+  /user/login:
+    post:
+      consumes:
+      - application/json
+      description: 登录
+      parameters:
+      - description: 用户名
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: 密码
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.doLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 登录
+      tags:
+      - 用户
+  /user/register:
+    post:
+      consumes:
+      - application/json
+      description: 注册
+      parameters:
+      - description: 用户名
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: 密码
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: 手机号
+        in: body
+        name: phone
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.doRegisterRequest'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 注册
+      tags:
+      - 用户
+  /user/updateSetting:
+    post:
+      consumes:
+      - application/json
+      description: 更新用户设置
+      parameters:
+      - description: 用户ID
+        in: body
+        name: userID
+        required: true
+        schema:
+          type: integer
+      - description: 用户设置
+        in: body
+        name: jsonBody
+        required: true
+        schema:
+          $ref: '#/definitions/entity.UserSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 更新用户设置
+      tags:
+      - 用户
 swagger: "2.0"

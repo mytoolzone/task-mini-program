@@ -9,26 +9,9 @@ import (
 //go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package=usecase_test
 
 type (
-	// Translation -.
-	Translation interface {
-		Translate(context.Context, entity.Translation) (entity.Translation, error)
-		History(context.Context) ([]entity.Translation, error)
-	}
-
-	// TranslationRepo -.
-	TranslationRepo interface {
-		Store(context.Context, entity.Translation) error
-		GetHistory(context.Context) ([]entity.Translation, error)
-	}
-
-	// TranslationWebAPI -.
-	TranslationWebAPI interface {
-		Translate(entity.Translation) (entity.Translation, error)
-	}
-
 	// User -.
 	User interface {
-		Login(context.Context, entity.User) (entity.User, error)
+		Login(ctx context.Context, username, password string) (entity.User, error)
 		Register(context.Context, entity.User) (entity.User, error)
 		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
 		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
@@ -40,6 +23,7 @@ type (
 		GetByUserID(ctx context.Context, userID int) (entity.User, error)
 		GetUserSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
 		UpdateUserSetting(ctx context.Context, userID int, setting entity.UserSetting) error
+		GetByUserName(ctx context.Context, username string) (entity.User, error)
 	}
 
 	// Task -.

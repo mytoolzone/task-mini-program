@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/mytoolzone/task-mini-program/internal/app_error"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 	"strconv"
@@ -12,10 +12,10 @@ type noticeRoutes struct {
 	n usecase.Notice
 }
 
-func newNoticeRoutes(handler *gin.RouterGroup, u usecase.Notice) {
+func newNoticeRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Notice) {
 	ur := noticeRoutes{u}
 
-	h := handler.Group("/notice")
+	h := handler.Group("/notice", auth)
 	{
 		// 获取用户通知列表
 		h.GET("/list", ur.list)
@@ -24,35 +24,53 @@ func newNoticeRoutes(handler *gin.RouterGroup, u usecase.Notice) {
 	}
 }
 
+// @Summary 获取用户通知列表
+// @Description 获取用户通知列表
+// @Tags 通知
+// @Accept json
+// @Produce json
+// @Success 200 {object} http_util.Response{data=[]entity.Notice}
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /notice/list [get]
 func (r noticeRoutes) list(ctx *gin.Context) {
-	userID := ctx.GetInt("userID")
+	userID := http_util.GetUserID(ctx)
 	notices, err := r.n.GetNoticeListByUser(ctx, userID)
 	if err != nil {
-		errorResponse(ctx, err)
+		http_util.Error(ctx, err)
 		return
 	}
 
 	http_util.Success(ctx, notices)
 }
 
+// @Summary 获取用户通知详情
+// @Description 获取用户通知详情
+// @Tags 通知
+// @Accept json
+// @Produce json
+// @Param noticeID query int true "通知ID"
+// @Success 200 {object} http_util.Response{data=entity.Notice}
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /notice/detail [get]
 func (r noticeRoutes) detail(ctx *gin.Context) {
 	noticeIDStr, _ := ctx.GetQuery("noticeID")
 	noticeID, _ := strconv.Atoi(noticeIDStr)
 	if noticeID <= 0 {
-		errorResponse(ctx, app_error.New(app_error.ErrorBadRequest, "not set params noticeID"))
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "not set params noticeID"))
 		return
 	}
 
 	notices, err := r.n.GetNoticeByNoticeID(ctx, noticeID)
 	if err != nil {
-		errorResponse(ctx, err)
+		http_util.Error(ctx, err)
 		return
 	}
 
-	userID := ctx.GetInt("userID")
-
+	userID := http_util.GetUserID(ctx)
 	if notices.UserID != userID {
-		errorResponse(ctx, app_error.New(app_error.ErrorBadRequest, "not your notice"))
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "not your notice"))
 		return
 	}
 

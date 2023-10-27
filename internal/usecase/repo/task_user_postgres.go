@@ -2,7 +2,7 @@ package repo
 
 import (
 	"context"
-	"github.com/mytoolzone/task-mini-program/internal/app_error"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
 )
@@ -29,7 +29,7 @@ func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (enti
 
 func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error) {
 	if status != entity.UserTaskStatusAuditFail && status != entity.UserTaskStatusAuditPass {
-		return entity.UserTask{}, app_error.New(app_error.ErrorAuditParamInValid, "status invalid")
+		return entity.UserTask{}, app_code.New(app_code.ErrorAuditParamInValid, "status invalid")
 	}
 
 	var UserTask entity.UserTask = entity.UserTask{

@@ -3,7 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
-	"github.com/mytoolzone/task-mini-program/internal/app_error"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"gorm.io/gorm"
 )
@@ -14,6 +14,16 @@ type TaskUseCase struct {
 	tru TaskRunUserRepo
 	trl TaskRunLogRepo
 	tu  UserTaskRepo
+}
+
+func NewTaskUseCase(t TaskRepo, tr TaskRunRepo, tru TaskRunUserRepo, trl TaskRunLogRepo, tu UserTaskRepo) *TaskUseCase {
+	return &TaskUseCase{
+		t:   t,
+		tr:  tr,
+		tru: tru,
+		trl: trl,
+		tu:  tu,
+	}
 }
 
 func (t TaskUseCase) CreateTask(ctx context.Context, task entity.Task) error {
@@ -82,7 +92,7 @@ func (t TaskUseCase) StartTaskRun(ctx context.Context, taskID int) error {
 	run, err := t.tr.GetPendingTaskRun(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return app_error.New(app_error.ErrorTaskRunNotFound, "没有准备开始的任务,任务可能已经开始或者未签到完成")
+			return app_code.New(app_code.ErrorTaskRunNotFound, "没有准备开始的任务,任务可能已经开始或者未签到完成")
 		}
 		return err
 	}
@@ -103,7 +113,7 @@ func (t TaskUseCase) PauseTaskRun(ctx context.Context, taskID int) error {
 	run, err := t.tr.GetRunningTaskRun(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return app_error.New(app_error.ErrorTaskRunNotFound, "没有正在执行中任务")
+			return app_code.New(app_code.ErrorTaskRunNotFound, "没有正在执行中任务")
 		}
 		return err
 	}
@@ -124,7 +134,7 @@ func (t TaskUseCase) FinishTaskRun(ctx context.Context, taskID int) error {
 	task, err := t.t.GetByTaskID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return app_error.New(app_error.ErrorTaskRunNotFound, "任务不存在")
+			return app_code.New(app_code.ErrorTaskRunNotFound, "任务不存在")
 		}
 		return err
 	}
@@ -133,7 +143,7 @@ func (t TaskUseCase) FinishTaskRun(ctx context.Context, taskID int) error {
 		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return app_error.New(app_error.ErrorTaskRunNotFound, "没有正在执行中任务")
+				return app_code.New(app_code.ErrorTaskRunNotFound, "没有正在执行中任务")
 			}
 			return err
 		}
@@ -159,7 +169,7 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 	task, err := t.t.GetByTaskID(ctx, taskID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return app_error.New(app_error.ErrorTaskRunNotFound, "任务不存在")
+			return app_code.New(app_code.ErrorTaskRunNotFound, "任务不存在")
 		}
 		return err
 	}
@@ -168,7 +178,7 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return app_error.New(app_error.ErrorTaskRunNotFound, "没有正在执行中任务")
+				return app_code.New(app_code.ErrorTaskRunNotFound, "没有正在执行中任务")
 			}
 			return err
 		}

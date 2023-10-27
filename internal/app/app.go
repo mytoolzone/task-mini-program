@@ -3,6 +3,7 @@ package app
 
 import (
 	"fmt"
+	"github.com/mytoolzone/task-mini-program/pkg/auth"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,7 +14,6 @@ import (
 	v1 "github.com/mytoolzone/task-mini-program/internal/controller/http/v1"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 	"github.com/mytoolzone/task-mini-program/internal/usecase/repo"
-	"github.com/mytoolzone/task-mini-program/internal/usecase/webapi"
 	"github.com/mytoolzone/task-mini-program/pkg/httpserver"
 	"github.com/mytoolzone/task-mini-program/pkg/logger"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
@@ -30,17 +30,15 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	// Use case
-	translationUseCase := usecase.New(
-		repo.New(pg),
-		webapi.New(),
-	)
-
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg))
-
+	noticeUseCase := usecase.NewNoticeUseCase(repo.NewNoticeRepo(pg))
+	taskUseCase := usecase.NewTaskUseCase(repo.NewTaskRepo(pg), repo.NewTaskRunRepo(pg), repo.NewTaskRunUserRepo(pg), repo.NewTaskRunLogRepo(pg), repo.NewUserTaskRepo(pg))
+	jwtAuth := auth.NewAuthJwt([]byte(cfg.JWT.Secret), cfg.App.Name)
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, l, translationUseCase, userUseCase)
+	v1.NewRouter(handler, l, userUseCase, taskUseCase, noticeUseCase, jwtAuth)
+
+	fmt.Println("server - Run - httpServer.Port: " + cfg.HTTP.Port)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 
 	// Waiting signal

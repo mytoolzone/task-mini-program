@@ -48,3 +48,9 @@ func (u *UserRepo) UpdateUserSetting(ctx context.Context, userID int, setting en
 	}
 	return nil
 }
+
+func (u *UserRepo) GetByUserName(ctx context.Context, username string) (entity.User, error) {
+	var user entity.User
+	err := u.Db.WithContext(ctx).Where("username = ?", username).First(&user).Error
+	return user, err
+}

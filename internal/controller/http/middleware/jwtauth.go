@@ -1,0 +1,45 @@
+package middleware
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
+	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
+	"github.com/mytoolzone/task-mini-program/pkg/auth"
+	"time"
+)
+
+// JWT 自定义中间件
+func JWT(authH auth.Auth) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var (
+			code  app_code.CodeType = app_code.Success
+			claim *auth.Claims
+			err   error
+		)
+
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			code = app_code.ErrorTokenNotSet
+		} else {
+			// 解析token
+			claim, err = authH.ParseToken(token)
+			if err != nil {
+				code = app_code.ErrorAuthFailed
+			} else if time.Now().Unix() > claim.ExpiresAt {
+				code = app_code.ErrorTokenTimeout
+			}
+		}
+
+		if code != app_code.Success {
+			http_util.Error(c, app_code.New(code, "auth failed"))
+			c.Abort()
+			return
+		}
+
+		// 将解析出来的用户id放入上下文
+		http_util.SetUserID(c, claim.UserID)
+		http_util.SetUserName(c, claim.Username)
+
+		c.Next()
+	}
+}
