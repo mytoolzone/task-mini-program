@@ -74,5 +74,9 @@ func (r noticeRoutes) detail(ctx *gin.Context) {
 		return
 	}
 
+	err = r.n.SetNoticeRead(ctx, noticeID)
+	if err != nil {
+		return
+	}
 	http_util.Success(ctx, notices)
 }

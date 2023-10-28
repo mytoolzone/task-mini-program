@@ -6,10 +6,18 @@ import (
 	"encoding/hex"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
+	"github.com/mytoolzone/task-mini-program/pkg/wechat"
 )
 
+func md5V(str string) string {
+	h := md5.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
 type UserUseCase struct {
-	repo UserRepo
+	repo  UserRepo
+	wxApp wechat.WxApp
 }
 
 func NewUserUseCase(r UserRepo) *UserUseCase {
@@ -18,10 +26,33 @@ func NewUserUseCase(r UserRepo) *UserUseCase {
 	}
 }
 
-func md5V(str string) string {
-	h := md5.New()
-	h.Write([]byte(str))
-	return hex.EncodeToString(h.Sum(nil))
+func (u UserUseCase) MiniProgramLogin(ctx context.Context, code string) (entity.User, error) {
+	wxSession, err := u.wxApp.Code2Session(ctx, code)
+	if err != nil {
+		return entity.User{}, app_code.New(app_code.ErrorUserNotFound, "用户不存在")
+	}
+
+	user, exist, err := u.repo.GetByOpenId(ctx, wxSession.OpenID)
+	if exist {
+		return user, err
+	}
+
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	// 不存在则创建用户
+	user = entity.User{
+		Openid:   wxSession.OpenID,
+		Username: "未命名用户",
+	}
+
+	err = u.repo.Store(ctx, &user)
+	if err != nil {
+		return entity.User{}, err
+	}
+
+	return user, nil
 }
 
 func (u UserUseCase) Login(ctx context.Context, username, password string) (entity.User, error) {
@@ -48,8 +79,7 @@ func (u UserUseCase) Register(ctx context.Context, user entity.User) (entity.Use
 
 	// 将 password md5 2次
 	user.Password = md5V(md5V(user.Password))
-
-	err = u.repo.Store(ctx, user)
+	err = u.repo.Store(ctx, &user)
 	return user, err
 }
 

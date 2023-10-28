@@ -22,10 +22,65 @@ func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, a auth.Auth,
 	h := handler.Group("/user")
 	{
 		h.POST("/login", ur.login)
+		h.POST("/miniProgramLogin", ur.miniProgramLogin)
 		h.POST("/register", ur.register)
 		h.POST("/updateSetting", ur.updateSetting, authH)
 		h.GET("/getSetting", ur.getSetting, authH)
 	}
+}
+
+type doMiniProgramLoginRequest struct {
+	Code string `json:"code" binding:"required"`
+}
+
+type doMiniProgramLoginResponse struct {
+	Token    string `json:"token"`
+	UserID   int    `json:"userId"`
+	Username string `json:"username"`
+	Phone    string `json:"phone"`
+}
+
+// @Summary 小程序登录
+// @Description 小程序登录
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param jsonBody body doMiniProgramLoginRequest true  "登录参数"
+// @Success 200 {object} doLoginResponse
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /user/miniProgramLogin [post]
+func (ur userRoutes) miniProgramLogin(context *gin.Context) {
+	//登录获取返回 jwt_token
+	//1.获取参数
+	//2.参数校验
+	//3.根据用户名和密码查询用户信息
+	//4.生成token
+	//5.返回token
+	var userReq doMiniProgramLoginRequest
+	if err := context.ShouldBindJSON(&userReq); err != nil {
+		http_util.Error(context, app_code.WithError(app_code.ErrorBadRequest, err))
+		return
+	}
+
+	user, err := ur.u.MiniProgramLogin(context.Request.Context(), userReq.Code)
+	if err != nil {
+		http_util.Error(context, err)
+		return
+	}
+
+	token, err := ur.a.GenerateToken(user.Username, user.ID)
+	if err != nil {
+		http_util.Error(context, err)
+		return
+	}
+
+	context.JSON(http.StatusOK, doMiniProgramLoginResponse{
+		Token:    token,
+		UserID:   user.ID,
+		Username: user.Username,
+		Phone:    user.Phone,
+	})
 }
 
 type doLoginRequest struct {
@@ -34,7 +89,9 @@ type doLoginRequest struct {
 }
 
 type doLoginResponse struct {
-	Token string `json:"token"`
+	Token    string `json:"token"`
+	UserID   int    `json:"userId"`
+	Username string `json:"username"`
 }
 
 // @Summary 登录
@@ -42,8 +99,7 @@ type doLoginResponse struct {
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Param username body string true "用户名"
-// @Param password body string true "密码"
+// @Param jsonBody body doLoginRequest true "登录参数"
 // @Success 200 {object} doLoginResponse
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
@@ -67,13 +123,13 @@ func (ur userRoutes) login(context *gin.Context) {
 		return
 	}
 
-	token, err := ur.a.GenerateToken(user.Username)
+	token, err := ur.a.GenerateToken(user.Username, user.ID)
 	if err != nil {
 		http_util.Error(context, err)
 		return
 	}
 
-	context.JSON(http.StatusOK, doLoginResponse{Token: token})
+	context.JSON(http.StatusOK, doLoginResponse{Token: token, UserID: user.ID, Username: user.Username})
 }
 
 type doRegisterRequest struct {
@@ -92,9 +148,7 @@ type doRegisterResponse struct {
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Param username body string true "用户名"
-// @Param password body string true "密码"
-// @Param phone body string false "手机号"
+// @Param jsonBody body doRegisterRequest true "注册参数"
 // @Success 200 {object} doRegisterRequest
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
@@ -139,7 +193,6 @@ type doUpdateUserSettingRequest struct {
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Param userID body int true "用户ID"
 // @Param jsonBody body entity.UserSetting true "用户设置"
 // @Success 200 {object} http_util.Response
 // @Failure 400 {object} http_util.Response

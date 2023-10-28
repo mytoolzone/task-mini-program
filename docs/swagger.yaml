@@ -168,10 +168,31 @@ definitions:
         example: error message
         type: string
     type: object
+  v1.doLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
   v1.doLoginResponse:
     properties:
       token:
         type: string
+      userId:
+        type: integer
+      username:
+        type: string
+    type: object
+  v1.doMiniProgramLoginRequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
     type: object
   v1.doRegisterRequest:
     properties:
@@ -834,18 +855,12 @@ paths:
       - application/json
       description: 登录
       parameters:
-      - description: 用户名
+      - description: 登录参数
         in: body
-        name: username
+        name: jsonBody
         required: true
         schema:
-          type: string
-      - description: 密码
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/v1.doLoginRequest'
       produces:
       - application/json
       responses:
@@ -864,29 +879,48 @@ paths:
       summary: 登录
       tags:
       - 用户
+  /user/miniProgramLogin:
+    post:
+      consumes:
+      - application/json
+      description: 小程序登录
+      parameters:
+      - description: 登录参数
+        in: body
+        name: jsonBody
+        required: true
+        schema:
+          $ref: '#/definitions/v1.doMiniProgramLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.doLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 小程序登录
+      tags:
+      - 用户
   /user/register:
     post:
       consumes:
       - application/json
       description: 注册
       parameters:
-      - description: 用户名
+      - description: 注册参数
         in: body
-        name: username
+        name: jsonBody
         required: true
         schema:
-          type: string
-      - description: 密码
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
-      - description: 手机号
-        in: body
-        name: phone
-        schema:
-          type: string
+          $ref: '#/definitions/v1.doRegisterRequest'
       produces:
       - application/json
       responses:
@@ -911,12 +945,6 @@ paths:
       - application/json
       description: 更新用户设置
       parameters:
-      - description: 用户ID
-        in: body
-        name: userID
-        required: true
-        schema:
-          type: integer
       - description: 用户设置
         in: body
         name: jsonBody

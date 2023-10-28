@@ -1022,21 +1022,58 @@ const docTemplate = `{
                 "summary": "登录",
                 "parameters": [
                     {
-                        "description": "用户名",
-                        "name": "username",
+                        "description": "登录参数",
+                        "name": "jsonBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.doLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.doLoginResponse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/miniProgramLogin": {
+            "post": {
+                "description": "小程序登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "小程序登录",
+                "parameters": [
                     {
-                        "description": "密码",
-                        "name": "password",
+                        "description": "登录参数",
+                        "name": "jsonBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.doMiniProgramLoginRequest"
                         }
                     }
                 ],
@@ -1077,29 +1114,12 @@ const docTemplate = `{
                 "summary": "注册",
                 "parameters": [
                     {
-                        "description": "用户名",
-                        "name": "username",
+                        "description": "注册参数",
+                        "name": "jsonBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "密码",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "手机号",
-                        "name": "phone",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/v1.doRegisterRequest"
                         }
                     }
                 ],
@@ -1139,15 +1159,6 @@ const docTemplate = `{
                 ],
                 "summary": "更新用户设置",
                 "parameters": [
-                    {
-                        "description": "用户ID",
-                        "name": "userID",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
                     {
                         "description": "用户设置",
                         "name": "jsonBody",
@@ -1422,10 +1433,42 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.doLoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.doLoginResponse": {
             "type": "object",
             "properties": {
                 "token": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.doMiniProgramLoginRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
                     "type": "string"
                 }
             }

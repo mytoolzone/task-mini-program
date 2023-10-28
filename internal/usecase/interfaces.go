@@ -15,15 +15,17 @@ type (
 		Register(context.Context, entity.User) (entity.User, error)
 		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
 		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
+		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
 	}
 
 	// UserRepo -.
 	UserRepo interface {
-		Store(context.Context, entity.User) error
+		Store(context.Context, *entity.User) error
 		GetByUserID(ctx context.Context, userID int) (entity.User, error)
 		GetUserSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
 		UpdateUserSetting(ctx context.Context, userID int, setting entity.UserSetting) error
 		GetByUserName(ctx context.Context, username string) (entity.User, error)
+		GetByOpenId(ctx context.Context, id string) (user entity.User, exist bool, err error)
 	}
 
 	// Task -.
@@ -138,6 +140,8 @@ type (
 	Notice interface {
 		// AddNotice 添加通知
 		AddNotice(ctx context.Context, notice entity.Notice) error
+		// SetNoticeRead 设置消息已读
+		SetNoticeRead(ctx context.Context, noticeID int) error
 		// GetNoticeListByUser 获取某个用户未读通知列表
 		GetNoticeListByUser(ctx context.Context, userID int) ([]entity.Notice, error)
 		// GetNoticeByNoticeID 获取通知详情 - 更新阅读通知状态
@@ -148,6 +152,8 @@ type (
 	NoticeRepo interface {
 		// AddNotice 添加通知
 		AddNotice(ctx context.Context, notice entity.Notice) error
+		// SetNoticeRead 设置消息已读
+		SetNoticeRead(ctx context.Context, noticeID int) error
 		// GetNoticeListByUser 获取某个用户未读通知列表
 		GetNoticeListByUser(ctx context.Context, userID int) ([]entity.Notice, error)
 		// GetNoticeByNoticeID 获取通知详情 - 更新阅读通知状态

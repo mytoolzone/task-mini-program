@@ -14,6 +14,10 @@ type NoticeRepo struct {
 	*postgres.Postgres
 }
 
+func (n NoticeRepo) SetNoticeRead(ctx context.Context, noticeID int) error {
+	return n.Db.WithContext(ctx).Model(&entity.Notice{}).Where("id = ?", noticeID).Update("status", entity.NotifyStatusRead).Error
+}
+
 func (n NoticeRepo) AddNotice(ctx context.Context, notice entity.Notice) error {
 	return n.Db.Create(&notice).Error
 }

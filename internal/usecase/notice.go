@@ -19,6 +19,19 @@ func (n NoticeUseCase) AddNotice(ctx context.Context, notice entity.Notice) erro
 	return n.noticeRepo.AddNotice(ctx, notice)
 }
 
+func (n NoticeUseCase) SetNoticeRead(ctx context.Context, noticeID int) error {
+	notice, err := n.noticeRepo.GetNoticeByNoticeID(ctx, noticeID)
+	if err != nil {
+		return err
+	}
+
+	if notice.Status == entity.NotifyStatusRead {
+		return nil
+	}
+
+	return n.noticeRepo.SetNoticeRead(ctx, noticeID)
+}
+
 func (n NoticeUseCase) GetNoticeListByUser(ctx context.Context, userID int) ([]entity.Notice, error) {
 	return n.noticeRepo.GetNoticeListByUser(ctx, userID)
 }

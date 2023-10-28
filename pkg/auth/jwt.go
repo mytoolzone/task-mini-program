@@ -6,7 +6,7 @@ import (
 )
 
 type Auth interface {
-	GenerateToken(username string) (string, error)
+	GenerateToken(username string, userID int) (string, error)
 	ParseToken(token string) (*Claims, error)
 }
 
@@ -29,12 +29,13 @@ func NewAuthJwt(jwtSecret []byte, appName string) Jwt {
 	}
 }
 
-func (j Jwt) GenerateToken(username string) (string, error) {
+func (j Jwt) GenerateToken(username string, userID int) (string, error) {
 	nowTime := time.Now()
 	expireTime := nowTime.Add(time.Minute * 15).Unix()
 
 	claims := Claims{
 		Username: username,
+		UserID:   userID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expireTime, // 过期时间
 			Issuer:    j.appName,  //指定发行人

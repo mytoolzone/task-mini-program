@@ -3,8 +3,10 @@ package repo
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
+	"gorm.io/gorm"
 )
 
 type UserRepo struct {
@@ -15,8 +17,8 @@ func NewUserRepo(pg *postgres.Postgres) *UserRepo {
 	return &UserRepo{pg}
 }
 
-func (u *UserRepo) Store(ctx context.Context, user entity.User) error {
-	return u.Db.Create(&user).Error
+func (u *UserRepo) Store(ctx context.Context, user *entity.User) error {
+	return u.Db.Create(user).Error
 }
 
 func (u *UserRepo) GetByUserID(ctx context.Context, userID int) (entity.User, error) {
@@ -53,4 +55,17 @@ func (u *UserRepo) GetByUserName(ctx context.Context, username string) (entity.U
 	var user entity.User
 	err := u.Db.WithContext(ctx).Where("username = ?", username).First(&user).Error
 	return user, err
+}
+
+func (u *UserRepo) GetByOpenId(ctx context.Context, openID string) (entity.User, bool, error) {
+	var user entity.User
+	err := u.Db.WithContext(ctx).Where("open_id = ?", openID).First(&user).Error
+	if err == nil {
+		return user, true, nil
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return user, false, nil
+	}
+	return user, false, err
 }
