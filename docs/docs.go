@@ -1035,7 +1035,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.doLoginResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/v1.doLoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1081,7 +1093,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.doLoginResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/v1.doMiniProgramLoginResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1127,7 +1151,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.doRegisterRequest"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/v1.doRegisterResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -1473,6 +1509,23 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.doMiniProgramLoginResponse": {
+            "type": "object",
+            "properties": {
+                "phone": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.doRegisterRequest": {
             "type": "object",
             "required": [
@@ -1491,6 +1544,14 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.doRegisterResponse": {
+            "type": "object",
+            "properties": {
+                "userId": {
+                    "type": "integer"
                 }
             }
         }

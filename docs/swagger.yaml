@@ -194,6 +194,17 @@ definitions:
     required:
     - code
     type: object
+  v1.doMiniProgramLoginResponse:
+    properties:
+      phone:
+        type: string
+      token:
+        type: string
+      userId:
+        type: integer
+      username:
+        type: string
+    type: object
   v1.doRegisterRequest:
     properties:
       password:
@@ -207,6 +218,11 @@ definitions:
     required:
     - password
     - username
+    type: object
+  v1.doRegisterResponse:
+    properties:
+      userId:
+        type: integer
     type: object
 host: localhost:8080
 info:
@@ -867,7 +883,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.doLoginResponse'
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/v1.doLoginResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -897,7 +918,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.doLoginResponse'
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/v1.doMiniProgramLoginResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -927,7 +953,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.doRegisterRequest'
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/v1.doRegisterResponse'
+              type: object
         "400":
           description: Bad Request
           schema:

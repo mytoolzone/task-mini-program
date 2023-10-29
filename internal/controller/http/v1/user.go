@@ -8,7 +8,6 @@ import (
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 	"github.com/mytoolzone/task-mini-program/pkg/auth"
-	"net/http"
 )
 
 type userRoutes struct {
@@ -46,7 +45,7 @@ type doMiniProgramLoginResponse struct {
 // @Accept json
 // @Produce json
 // @Param jsonBody body doMiniProgramLoginRequest true  "登录参数"
-// @Success 200 {object} doLoginResponse
+// @Success 200 {object} http_util.Response{data=doMiniProgramLoginResponse}
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
 // @Router /user/miniProgramLogin [post]
@@ -75,12 +74,7 @@ func (ur userRoutes) miniProgramLogin(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, doMiniProgramLoginResponse{
-		Token:    token,
-		UserID:   user.ID,
-		Username: user.Username,
-		Phone:    user.Phone,
-	})
+	http_util.Success(context, doMiniProgramLoginResponse{Token: token, UserID: user.ID, Username: user.Username, Phone: user.Phone})
 }
 
 type doLoginRequest struct {
@@ -100,7 +94,7 @@ type doLoginResponse struct {
 // @Accept json
 // @Produce json
 // @Param jsonBody body doLoginRequest true "登录参数"
-// @Success 200 {object} doLoginResponse
+// @Success 200 {object} http_util.Response{data=doLoginResponse}
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
 // @Router /user/login [post]
@@ -129,7 +123,7 @@ func (ur userRoutes) login(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, doLoginResponse{Token: token, UserID: user.ID, Username: user.Username})
+	http_util.Success(context, doLoginResponse{Token: token, UserID: user.ID, Username: user.Username})
 }
 
 type doRegisterRequest struct {
@@ -149,7 +143,7 @@ type doRegisterResponse struct {
 // @Accept json
 // @Produce json
 // @Param jsonBody body doRegisterRequest true "注册参数"
-// @Success 200 {object} doRegisterRequest
+// @Success 200 {object} http_util.Response{data=doRegisterResponse}
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
 // @Router /user/register [post]
@@ -180,7 +174,7 @@ func (ur userRoutes) register(context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, doRegisterResponse{UserID: user.ID})
+	http_util.Success(context, doRegisterResponse{UserID: user.ID})
 }
 
 type doUpdateUserSettingRequest struct {
@@ -231,5 +225,5 @@ func (ur userRoutes) getSetting(c *gin.Context) {
 		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, err))
 		return
 	}
-	c.JSON(http.StatusOK, setting)
+	http_util.Success(c, setting)
 }
