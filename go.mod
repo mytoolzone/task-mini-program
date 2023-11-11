@@ -14,7 +14,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.2.6
 	github.com/jackc/pgx/v4 v4.17.2
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rs/zerolog v1.26.1
+	github.com/rs/zerolog v1.31.0
 	github.com/silenceper/wechat/v2 v2.1.5
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.4.0
@@ -77,8 +77,8 @@ require (
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.10 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
+	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
