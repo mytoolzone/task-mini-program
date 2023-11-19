@@ -66,9 +66,11 @@ func NewMiniProgram(appID, appSecret string) *MiniProgram {
 
 func (m MiniProgram) Code2Session(ctx context.Context, jsCode string) (SessionInfo, error) {
 	sessionContext, err := m.mini.GetAuth().Code2SessionContext(ctx, jsCode)
+
 	if err != nil {
 		return SessionInfo{}, err
 	}
+
 	return SessionInfo{
 		OpenID:     sessionContext.OpenID,
 		SessionKey: sessionContext.SessionKey,

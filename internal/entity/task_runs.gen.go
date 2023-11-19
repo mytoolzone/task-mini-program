@@ -16,8 +16,8 @@ type TaskRun struct {
 	TaskID    int       `gorm:"column:task_id" json:"task_id"`
 	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	StartAt   time.Time `gorm:"column:start_at" json:"start_at"`
-	Endat     time.Time `gorm:"column:endat" json:"endat"`
-	Duration  string    `gorm:"column:duration" json:"duration"`
+	Endat     time.Time `gorm:"column:end_at" json:"end_at"`
+	Duration  int       `gorm:"column:duration" json:"duration"`
 	Status    string    `gorm:"column:status" json:"status"`
 }
 

@@ -18,6 +18,9 @@ func NewUserRepo(pg *postgres.Postgres) *UserRepo {
 }
 
 func (u *UserRepo) Store(ctx context.Context, user *entity.User) error {
+	if user.Ext == "" {
+		user.Ext = "{}"
+	}
 	return u.Db.Create(user).Error
 }
 
@@ -28,8 +31,23 @@ func (u *UserRepo) GetByUserID(ctx context.Context, userID int) (entity.User, er
 }
 
 func (u *UserRepo) GetUserSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error) {
-	var setting entity.UserSetting
-	err := u.Db.WithContext(ctx).Where("user_id = ?", userID).First(&setting).Error
+	var (
+		user    entity.User
+		setting entity.UserSetting
+	)
+	err := u.Db.WithContext(ctx).Where("id = ?", userID).First(&user).Error
+	if err != nil {
+		return entity.UserSetting{}, err
+	}
+
+	if user.Ext == "" {
+		return entity.UserSetting{}, nil
+	}
+	err = json.Unmarshal([]byte(user.Ext), &setting)
+	if err != nil {
+		return entity.UserSetting{}, err
+	}
+
 	return setting, err
 }
 
@@ -39,6 +57,7 @@ func (u *UserRepo) UpdateUserSetting(ctx context.Context, userID int, setting en
 	if err != nil {
 		return err
 	}
+
 	data, err := json.Marshal(setting)
 	if err != nil {
 		return err
@@ -59,7 +78,7 @@ func (u *UserRepo) GetByUserName(ctx context.Context, username string) (entity.U
 
 func (u *UserRepo) GetByOpenId(ctx context.Context, openID string) (entity.User, bool, error) {
 	var user entity.User
-	err := u.Db.WithContext(ctx).Where("open_id = ?", openID).First(&user).Error
+	err := u.Db.WithContext(ctx).Where("openid = ?", openID).First(&user).Error
 	if err == nil {
 		return user, true, nil
 	}

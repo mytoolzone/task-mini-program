@@ -29,6 +29,7 @@ func newNoticeRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.N
 // @Tags 通知
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "jwt_token"
 // @Success 200 {object} http_util.Response{data=[]entity.Notice}
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response
@@ -49,6 +50,7 @@ func (r noticeRoutes) list(ctx *gin.Context) {
 // @Tags 通知
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "jwt_token"
 // @Param noticeID query int true "通知ID"
 // @Success 200 {object} http_util.Response{data=entity.Notice}
 // @Failure 400 {object} http_util.Response

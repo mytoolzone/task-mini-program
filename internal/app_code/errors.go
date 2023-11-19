@@ -6,7 +6,9 @@ const (
 	ErrorUserPassword      CodeType = "password_error"
 	ErrorServerError       CodeType = "service_error"
 	ErrorAuthFailed        CodeType = "auth_failed"
+	ErrorWxAuthFailed      CodeType = "wx_auth_failed"
 	ErrorTokenNotSet       CodeType = "token_not_set"
+	ErrorRepeat            CodeType = "repeat"
 	ErrorTokenTimeout      CodeType = "token_timeout"
 	ErrorForbidden         CodeType = "forbidden"
 	ErrorUserExist         CodeType = "user_exist"
@@ -21,6 +23,8 @@ const (
 	ErrorCreateTask        CodeType = "create_task"
 )
 
+var AppErrorRoot = New("root", "root error")
+
 type CodeType string
 
 type AppError struct {
@@ -32,15 +36,15 @@ func (e AppError) Error() string {
 	return string(e.Code) + ":" + e.Message
 }
 
-func New(errType CodeType, message string) AppError {
-	return AppError{
+func New(errType CodeType, message string) *AppError {
+	return &AppError{
 		Code:    errType,
 		Message: message,
 	}
 }
 
-func WithError(errType CodeType, err error) AppError {
-	return AppError{
+func WithError(errType CodeType, err error) *AppError {
+	return &AppError{
 		Code:    errType,
 		Message: err.Error(),
 	}

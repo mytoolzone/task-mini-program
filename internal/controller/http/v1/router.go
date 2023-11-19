@@ -22,7 +22,7 @@ import (
 // @title       Task Mini Program
 // @description Task Mini Program API
 // @version     1.0
-// @host        localhost:8080
+// @host        task.mytool.zone
 // @BasePath    /v1
 func NewRouter(handler *gin.Engine,
 	l logger.Interface,
@@ -49,8 +49,13 @@ func NewRouter(handler *gin.Engine,
 	hl := handler.Group("/v1")
 	jwt := middleware.JWT(auth)
 	{
-		newTaskRoutes(hl, jwt, tk)
+		newTaskRoutes(hl, jwt, tk, n)
 		newUserRoutes(hl, jwt, auth, u)
 		newNoticeRoutes(hl, jwt, n)
 	}
+
+	// Static files
+	//handler.StaticFS("/public", http.Dir("public"))
+	//handler.StaticFS("/.well-known", http.Dir("public/.well-known"))
+
 }

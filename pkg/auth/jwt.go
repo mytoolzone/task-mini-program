@@ -31,7 +31,7 @@ func NewAuthJwt(jwtSecret []byte, appName string) Jwt {
 
 func (j Jwt) GenerateToken(username string, userID int) (string, error) {
 	nowTime := time.Now()
-	expireTime := nowTime.Add(time.Minute * 15).Unix()
+	expireTime := nowTime.Add(time.Hour * 720).Unix()
 
 	claims := Claims{
 		Username: username,

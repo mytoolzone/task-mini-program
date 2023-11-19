@@ -4,9 +4,12 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
+	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/wechat"
+	"gorm.io/gorm"
 )
 
 func md5V(str string) string {
@@ -20,16 +23,18 @@ type UserUseCase struct {
 	wxApp wechat.WxApp
 }
 
-func NewUserUseCase(r UserRepo) *UserUseCase {
+func NewUserUseCase(r UserRepo, wxApp wechat.WxApp) *UserUseCase {
 	return &UserUseCase{
-		repo: r,
+		repo:  r,
+		wxApp: wxApp,
 	}
 }
 
 func (u UserUseCase) MiniProgramLogin(ctx context.Context, code string) (entity.User, error) {
 	wxSession, err := u.wxApp.Code2Session(ctx, code)
+	glog.Infof("wxSession: %+v - %+v - %+v", code, wxSession, err)
 	if err != nil {
-		return entity.User{}, app_code.New(app_code.ErrorUserNotFound, "用户不存在")
+		return entity.User{}, app_code.New(app_code.ErrorWxAuthFailed, "微信授权失败 "+err.Error())
 	}
 
 	user, exist, err := u.repo.GetByOpenId(ctx, wxSession.OpenID)
@@ -45,6 +50,7 @@ func (u UserUseCase) MiniProgramLogin(ctx context.Context, code string) (entity.
 	user = entity.User{
 		Openid:   wxSession.OpenID,
 		Username: "未命名用户",
+		Status:   entity.UserStatusFrozen,
 	}
 
 	err = u.repo.Store(ctx, &user)
@@ -93,6 +99,10 @@ func (u UserUseCase) UpdateSetting(ctx context.Context, userId int, setting enti
 
 func (u UserUseCase) GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error) {
 	setting, err := u.repo.GetUserSettingByUserID(ctx, userID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.UserSetting{}, nil
+	}
+
 	if err != nil {
 		return entity.UserSetting{}, err
 	}

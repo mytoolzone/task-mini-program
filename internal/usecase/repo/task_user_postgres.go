@@ -16,10 +16,12 @@ func NewUserTaskRepo(pg *postgres.Postgres) *UserTaskRepo {
 }
 
 func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
+	//
 	var UserTask entity.UserTask = entity.UserTask{
 		TaskID: taskID,
 		UserID: userID,
 		Status: entity.UserTaskStatusApply,
+		Role:   entity.UserTaskRoleNone,
 	}
 	if err := t.Db.WithContext(ctx).Create(&UserTask).Error; err != nil {
 		return entity.UserTask{}, err
@@ -44,9 +46,13 @@ func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, sta
 	return UserTask, nil
 }
 
-func (t UserTaskRepo) GetUserTaskList(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+func (t UserTaskRepo) GetUserTaskList(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
 	var UserTasks []entity.UserTask
-	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&UserTasks).Error
+	query := t.Db.WithContext(ctx).Where("task_id = ?", taskID)
+	if status != "" {
+		query = query.Where("status =?", status)
+	}
+	err := query.Debug().Find(&UserTasks).Error
 	return UserTasks, err
 }
 

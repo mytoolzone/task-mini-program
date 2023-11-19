@@ -30,6 +30,13 @@ const docTemplate = `{
                 "summary": "获取用户通知详情",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "通知ID",
                         "name": "noticeID",
@@ -84,6 +91,15 @@ const docTemplate = `{
                     "通知"
                 ],
                 "summary": "获取用户通知列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -137,6 +153,13 @@ const docTemplate = `{
                 "operationId": "apply-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -182,6 +205,13 @@ const docTemplate = `{
                 "operationId": "audit-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -189,6 +219,10 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "rejected",
+                            "approved"
+                        ],
                         "type": "string",
                         "description": "auditStatus",
                         "name": "auditStatus",
@@ -234,6 +268,13 @@ const docTemplate = `{
                 "operationId": "audit-user-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -248,6 +289,10 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "rejected",
+                            "approved"
+                        ],
                         "type": "string",
                         "description": "auditStatus",
                         "name": "auditStatus",
@@ -293,6 +338,13 @@ const docTemplate = `{
                 "operationId": "cancel-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -336,11 +388,41 @@ const docTemplate = `{
                 ],
                 "summary": "Create task",
                 "operationId": "create-task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "创建任务",
+                        "name": "jsonBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.Task"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http_util.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.Task"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -373,6 +455,13 @@ const docTemplate = `{
                 "summary": "Show task detail",
                 "operationId": "detail",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "taskID",
@@ -431,6 +520,13 @@ const docTemplate = `{
                 "operationId": "finish-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -476,9 +572,33 @@ const docTemplate = `{
                 "operationId": "list",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
-                        "description": "lastId",
-                        "name": "lastId",
+                        "description": "lastID",
+                        "name": "lastID",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "torun",
+                            "audit_fail",
+                            "join",
+                            "new",
+                            "running",
+                            "paused",
+                            "finished",
+                            "canceled",
+                            "deleted"
+                        ],
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -535,6 +655,13 @@ const docTemplate = `{
                 "operationId": "pause-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -579,6 +706,13 @@ const docTemplate = `{
                 "summary": "Prepare task",
                 "operationId": "prepare-task",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "taskID",
@@ -637,6 +771,13 @@ const docTemplate = `{
                 "operationId": "run-log-list",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -645,8 +786,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "description": "lastId",
-                        "name": "lastId",
+                        "description": "lastID",
+                        "name": "lastID",
                         "in": "query"
                     }
                 ],
@@ -703,6 +844,13 @@ const docTemplate = `{
                 "operationId": "sign-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
@@ -755,6 +903,13 @@ const docTemplate = `{
                 "operationId": "start-task",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskRunID",
@@ -800,12 +955,19 @@ const docTemplate = `{
                 "operationId": "upload-run-log",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "上报任务运行日志",
                         "name": "jsonBody",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.TaskRunLog"
+                            "$ref": "#/definitions/v1.UploadRunLogRequest"
                         }
                     }
                 ],
@@ -846,6 +1008,13 @@ const docTemplate = `{
                 "summary": "User task list",
                 "operationId": "user-task-list",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "userID",
@@ -903,9 +1072,16 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "User list",
-                "operationId": "user-list",
+                "summary": "Apply Task User list",
+                "operationId": "apply-user-list",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "taskID",
@@ -966,10 +1142,10 @@ const docTemplate = `{
                 "summary": "获取用户设置",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "用户ID",
-                        "name": "userID",
-                        "in": "query",
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -1196,6 +1372,13 @@ const docTemplate = `{
                 "summary": "更新用户设置",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "用户设置",
                         "name": "jsonBody",
                         "in": "body",
@@ -1237,7 +1420,9 @@ const docTemplate = `{
                 "password_error",
                 "service_error",
                 "auth_failed",
+                "wx_auth_failed",
                 "token_not_set",
+                "repeat",
                 "token_timeout",
                 "forbidden",
                 "user_exist",
@@ -1257,7 +1442,9 @@ const docTemplate = `{
                 "ErrorUserPassword",
                 "ErrorServerError",
                 "ErrorAuthFailed",
+                "ErrorWxAuthFailed",
                 "ErrorTokenNotSet",
+                "ErrorRepeat",
                 "ErrorTokenTimeout",
                 "ErrorForbidden",
                 "ErrorUserExist",
@@ -1285,6 +1472,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "user_id": {
@@ -1331,9 +1521,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "duration": {
-                    "type": "string"
+                    "type": "integer"
                 },
-                "endat": {
+                "end_at": {
                     "type": "string"
                 },
                 "id": {
@@ -1400,6 +1590,9 @@ const docTemplate = `{
                 "education": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "height": {
                     "type": "string"
                 },
@@ -1407,6 +1600,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "job": {
+                    "type": "string"
+                },
+                "phone": {
                     "type": "string"
                 },
                 "tags": {
@@ -1466,6 +1662,46 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "error message"
+                }
+            }
+        },
+        "v1.Task": {
+            "type": "object",
+            "properties": {
+                "describe": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "require": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UploadRunLogRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "taskID": {
+                    "type": "integer"
+                },
+                "videos": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1561,7 +1797,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "task.mytool.zone",
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Task Mini Program",

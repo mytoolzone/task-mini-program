@@ -1,16 +1,18 @@
 # Step 1: Modules caching
-FROM golang:1.17.1-alpine3.14 as modules
+FROM golang:1.20-alpine as modules
 COPY go.mod go.sum /modules/
 WORKDIR /modules
+RUN go env -w  GOPROXY=https://goproxy.cn,direct
 RUN go mod download
 
 # Step 2: Builder
-FROM golang:1.17.1-alpine3.14 as builder
+FROM golang:1.20-alpine as builder
 COPY --from=modules /go/pkg /go/pkg
 COPY . /app
 WORKDIR /app
+RUN go env -w  GOPROXY=https://goproxy.cn,direct
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -tags migrate -o /bin/server .
+    go build -tags migrate -o /bin/app .
 
 # Step 3: Final
 FROM scratch

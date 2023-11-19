@@ -2,19 +2,22 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 	"strconv"
+	"strings"
 )
 
 type taskRoutes struct {
-	task usecase.Task
+	task   usecase.Task
+	notice usecase.Notice
 }
 
-func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Task) {
-	ur := taskRoutes{u}
+func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Task, n usecase.Notice) {
+	ur := taskRoutes{u, n}
 
 	h := handler.Group("/task", auth)
 	{
@@ -25,7 +28,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 		// 获取任务列表
 		h.GET("/list", ur.list)
 		// 审核任务
-		h.POST("/audiTask", ur.auditTask)
+		h.POST("/auditTask", ur.auditTask)
 		// 报名任务
 		h.POST("/apply", ur.apply)
 		// 审核报名
@@ -48,11 +51,21 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 		h.GET("/runLogs", ur.runLogList)
 		// 获取任务用户列表
 		h.GET("/users", ur.userList)
+		// 获取任务用户列表
+		h.GET("/applyUsers", ur.applyUserList)
 		// 获取某人任务列表
 		h.GET("/userTasks", ur.userTaskList)
 		// 获取某个用户的统计数据
 		h.GET("/userSummary", ur.userSummary)
 	}
+}
+
+// Task mapped from table <tasks>
+type Task struct {
+	Name     string `gorm:"column:name;not null" json:"name"`
+	Describe string `gorm:"column:describe" json:"describe"`
+	Require  string `gorm:"column:require" json:"require"`
+	Location string `gorm:"column:location" json:"location"`
 }
 
 // @Summary     Create task
@@ -61,24 +74,27 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
-// @Success     200 {object} http_util.Response
+// @Param Authorization header string true "jwt_token"
+// @Param       jsonBody body Task true "创建任务"
+// @Success     200 {object} http_util.Response{data=entity.Task}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
 // @Router      /task/create [post]
 func (r taskRoutes) create(ctx *gin.Context) {
-	var request entity.Task
-	if err := ctx.ShouldBindJSON(&request); err != nil {
+	var task entity.Task
+	if err := ctx.ShouldBindJSON(&task); err != nil {
 		http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, err))
 		return
 	}
 
-	request.CreateBy = ctx.GetInt("userID")
-	err := r.task.CreateTask(ctx.Request.Context(), request)
+	task.CreateBy = http_util.GetUserID(ctx)
+	task.Status = entity.TaskStatusNew
+	err := r.task.CreateTask(ctx.Request.Context(), &task)
 	if err != nil {
 		http_util.Error(ctx, app_code.WithError(app_code.ErrorCreateTask, err))
 		return
 	}
-	http_util.Success(ctx, nil)
+	http_util.Success(ctx, task)
 }
 
 // @Summary     Show task detail
@@ -87,6 +103,7 @@ func (r taskRoutes) create(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response{data=entity.Task}
 // @Failure     400 {object} http_util.Response
@@ -116,18 +133,24 @@ func (r taskRoutes) detail(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
-// @Param       lastId query int false "lastId"
+// @Param Authorization header string true "jwt_token"
+// @Param       lastID query int false "lastID"
+// @Param       status query string false "status"  Enums(torun, audit_fail,join,new,running,paused,finished,canceled,deleted)
 // @Success     200 {object} http_util.Response{data=[]entity.Task}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
 // @Router      /task/list [get]
 func (r taskRoutes) list(ctx *gin.Context) {
-	lastIdStr, _ := ctx.GetQuery("lastId")
-	lastId, _ := strconv.Atoi(lastIdStr)
-	if lastId < 0 {
-		lastId = 0
+	lastIDStr, _ := ctx.GetQuery("lastID")
+	lastID, _ := strconv.Atoi(lastIDStr)
+	if lastID < 0 {
+		lastID = 0
 	}
-	list, err := r.task.GetTaskList(ctx.Request.Context(), lastId)
+
+	statusStr, _ := ctx.GetQuery("status")
+	keyword, _ := ctx.GetQuery("keyword")
+
+	list, err := r.task.GetTaskList(ctx.Request.Context(), lastID, keyword, statusStr)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -141,8 +164,9 @@ func (r taskRoutes) list(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
-// @Param       auditStatus query string true "auditStatus"
+// @Param       auditStatus query string true "auditStatus" Enums(rejected, approved)
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
@@ -160,11 +184,32 @@ func (r taskRoutes) auditTask(ctx *gin.Context) {
 		return
 	}
 
-	err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus)
+	task, err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
 	}
+
+	// 发送通知
+	go func() {
+		var content string
+		if auditStatus == entity.StatusAuditReject {
+			content = "您的任务'" + task.Name + "'已被管理员拒绝，请重新提交任务"
+		} else {
+			content = "您的任务'" + task.Name + "'已被管理员通过，请及时开启任务"
+		}
+
+		err := r.notice.AddNotice(ctx.Request.Context(), entity.Notice{
+			Title:   "任务审核",
+			Content: content,
+			Status:  entity.NotifyStatusUnread,
+			UserID:  task.CreateBy,
+		})
+		if err != nil {
+			glog.WithErr(err).Error("add notice field")
+		}
+	}()
+
 	http_util.Success(ctx, nil)
 }
 
@@ -174,6 +219,7 @@ func (r taskRoutes) auditTask(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
@@ -186,10 +232,11 @@ func (r taskRoutes) apply(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
 		return
 	}
-	userID := ctx.GetInt("userID")
+	userID := http_util.GetUserID(ctx)
 
 	err := r.task.JoinTask(ctx.Request.Context(), taskID, userID)
 	if err != nil {
+		http_util.Error(ctx, err)
 		return
 	}
 
@@ -203,9 +250,10 @@ func (r taskRoutes) apply(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Param       userID query int true "userID"
-// @Param       auditStatus query string true "auditStatus"
+// @Param       auditStatus query string true "auditStatus" Enums(rejected, approved)
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
@@ -231,6 +279,7 @@ func (r taskRoutes) auditUserTask(ctx *gin.Context) {
 
 	err := r.task.AuditUserTask(ctx.Request.Context(), taskID, userID, auditStatus)
 	if err != nil {
+		http_util.Error(ctx, err)
 		return
 	}
 
@@ -244,6 +293,7 @@ func (r taskRoutes) auditUserTask(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response{data=entity.TaskRun}
 // @Failure     400 {object} http_util.Response
@@ -272,6 +322,7 @@ func (r taskRoutes) prepare(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Param       taskRunID query int true "taskRunID"
 // @Success     200 {object} http_util.Response
@@ -293,7 +344,7 @@ func (r taskRoutes) sign(ctx *gin.Context) {
 		return
 	}
 
-	userID := ctx.GetInt("userID")
+	userID := http_util.GetUserID(ctx)
 	err := r.task.Sign(ctx.Request.Context(), taskID, taskRunID, userID)
 	if err != nil {
 		http_util.Error(ctx, err)
@@ -309,6 +360,7 @@ func (r taskRoutes) sign(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskRunID query int true "taskID"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
@@ -337,6 +389,7 @@ func (r taskRoutes) start(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
@@ -365,6 +418,7 @@ func (r taskRoutes) pause(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
@@ -393,6 +447,7 @@ func (r taskRoutes) finish(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
@@ -421,8 +476,9 @@ func (r taskRoutes) cancel(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
-// @Param       lastId query int false "lastId"
+// @Param       lastID query int false "lastID"
 // @Success     200 {object} http_util.Response{data=[]entity.TaskRunLog}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
@@ -434,8 +490,10 @@ func (r taskRoutes) runLogList(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
 		return
 	}
+	lastIDStr, _ := ctx.GetQuery("lastID")
+	lastID, _ := strconv.Atoi(lastIDStr)
 
-	list, err := r.task.GetTaskRunLogList(ctx.Request.Context(), taskID)
+	list, err := r.task.GetTaskRunLogList(ctx.Request.Context(), taskID, lastID)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -450,7 +508,9 @@ func (r taskRoutes) runLogList(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       taskID query int true "taskID"
+// @Param       status query string false "status"
 // @Success     200 {object} http_util.Response{data=[]entity.UserTask}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
@@ -462,7 +522,38 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
 		return
 	}
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID)
+
+	status := ctx.Query("status")
+	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, status)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+
+	http_util.Success(ctx, userTasks)
+}
+
+// @Summary     Apply Task User list
+// @Description 获取任务用户列表
+// @ID          apply-user-list
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=[]entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/users [get]
+func (r taskRoutes) applyUserList(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, entity.UserTaskStatusApply)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -477,13 +568,14 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       userID query int true "userID"
 // @Success     200 {object} http_util.Response{data=[]entity.Task}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
 // @Router      /task/userTasks [get]
 func (r taskRoutes) userTaskList(ctx *gin.Context) {
-	userID := ctx.GetInt("userID")
+	userID := http_util.GetUserID(ctx)
 	tasks, err := r.task.GetByUserID(ctx.Request.Context(), userID)
 	if err != nil {
 		http_util.Error(ctx, err)
@@ -493,27 +585,41 @@ func (r taskRoutes) userTaskList(ctx *gin.Context) {
 	http_util.Success(ctx, tasks)
 }
 
+type UploadRunLogRequest struct {
+	TaskID  int      `json:"taskID"`
+	Content string   `json:"content"`
+	Images  []string `json:"images"`
+	Videos  []string `json:"videos"`
+}
+
 // @Summary     Upload run log
 // @Description 上报任务运行日志列表
 // @ID          upload-run-log
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
-// @Param       jsonBody body entity.TaskRunLog true "上报任务运行日志"
+// @Param Authorization header string true "jwt_token"
+// @Param       jsonBody body UploadRunLogRequest true "上报任务运行日志"
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
 // @Router      /task/uploadRunLog [post]
 func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
-	userID := ctx.GetInt("userID")
-	var request entity.TaskRunLog
+	var request UploadRunLogRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, err))
 		return
 	}
 
-	request.UserID = userID
-	err := r.task.UploadRunLog(ctx.Request.Context(), request)
+	var runLog = entity.TaskRunLog{
+		TaskID:  request.TaskID,
+		Content: request.Content,
+		UserID:  http_util.GetUserID(ctx),
+		Images:  strings.Join(request.Images, ","),
+		Videos:  strings.Join(request.Videos, ","),
+	}
+
+	err := r.task.UploadRunLog(ctx.Request.Context(), runLog)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -528,10 +634,11 @@ func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
+// @Param Authorization header string true "jwt_token"
 // @Param       userID query int true "userID"
 // @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
 func (r taskRoutes) userSummary(ctx *gin.Context) {
-	userID := ctx.GetInt("userID")
+	userID := http_util.GetUserID(ctx)
 
 	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID)
 	if err != nil {

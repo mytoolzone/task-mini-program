@@ -1,8 +1,8 @@
 package http_util
 
 import (
-	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"net/http"
 )
@@ -26,9 +26,9 @@ func Success(ctx *gin.Context, data interface{}) {
 }
 
 func Error(c *gin.Context, err error) {
-	var appErr app_code.AppError
-	ok := errors.As(err, &appErr)
+	appErr, ok := err.(*app_code.AppError)
 	if !ok {
+		glog.Errorf("http request error %+v", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, Response{
 			Error: err.Error(),
 			Code:  app_code.ErrorServerError,
@@ -47,8 +47,11 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorTaskExist:
 	case app_code.ErrorUserExist:
 		statusCode = http.StatusConflict
+	case app_code.ErrorRepeat:
+		statusCode = http.StatusOK
 	}
 
+	glog.Errorf("http request code [%+v] - err %+v", appErr.Code, appErr.Message)
 	c.AbortWithStatusJSON(statusCode, Response{
 		Error: appErr.Message,
 		Code:  appErr.Code,

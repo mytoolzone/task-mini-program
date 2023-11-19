@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
+	"time"
 )
 
 type TaskRunUserRepo struct {
@@ -19,7 +20,8 @@ func (t TaskRunUserRepo) AddTaskRunUser(ctx context.Context, taskID, taskRunID, 
 		TaskID:    taskID,
 		TaskRunID: taskRunID,
 		UserID:    userID,
-		Status:    entity.TaskStatusPending,
+		Status:    entity.TaskStatusSign,
+		CreatedAt: time.Now(),
 	}
 	if err := t.Db.Create(&taskRunUser).Error; err != nil {
 		return entity.TaskRunUser{}, err
@@ -28,19 +30,23 @@ func (t TaskRunUserRepo) AddTaskRunUser(ctx context.Context, taskID, taskRunID, 
 }
 
 func (t TaskRunUserRepo) StartTaskRun(ctx context.Context, taskID, taskRunID int) error {
+	tru := entity.TaskRunUser{
+		Status:  entity.TaskStatusRunning,
+		StartAt: time.Now(),
+	}
 	// 更新task_run_user表中 startAt 为当前时间
-	return t.Db.WithContext(ctx).Where("task_id = ? and task_run_id ", taskID, taskRunID).Updates(map[string]string{
-		"start_at": "now()",
-		"status":   entity.TaskStatusRunning,
-	}).Error
+	return t.Db.WithContext(ctx).Model(&entity.TaskRunUser{}).Where("task_id = ? and task_run_id = ?", taskID, taskRunID).
+		Updates(tru).Error
 }
 
 func (t TaskRunUserRepo) FinishTaskRun(ctx context.Context, taskID, taskRunID int) error {
+	tru := entity.TaskRunUser{
+		Status:     entity.TaskStatusFinished,
+		FinishedAt: time.Now(),
+	}
 	// 更新task_run_user表中 finished_at 为当前时间
-	return t.Db.WithContext(ctx).Where("task_id = ? and task_run_id ", taskID, taskRunID).Updates(map[string]string{
-		"finished_at": "now()",
-		"status":      entity.TaskStatusFinished,
-	}).Error
+	return t.Db.Debug().WithContext(ctx).Where("task_id = ? and task_run_id =? ", taskID, taskRunID).
+		Updates(tru).Error
 }
 
 func (t TaskRunUserRepo) CancelTaskRun(ctx context.Context, taskID, taskRunID int) error {

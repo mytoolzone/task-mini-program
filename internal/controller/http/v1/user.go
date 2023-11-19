@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -23,8 +24,8 @@ func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, a auth.Auth,
 		h.POST("/login", ur.login)
 		h.POST("/miniProgramLogin", ur.miniProgramLogin)
 		h.POST("/register", ur.register)
-		h.POST("/updateSetting", ur.updateSetting, authH)
-		h.GET("/getSetting", ur.getSetting, authH)
+		h.POST("/updateSetting", authH, ur.updateSetting)
+		h.GET("/getSetting", authH, ur.getSetting)
 	}
 }
 
@@ -50,12 +51,6 @@ type doMiniProgramLoginResponse struct {
 // @Failure 500 {object} http_util.Response
 // @Router /user/miniProgramLogin [post]
 func (ur userRoutes) miniProgramLogin(context *gin.Context) {
-	//登录获取返回 jwt_token
-	//1.获取参数
-	//2.参数校验
-	//3.根据用户名和密码查询用户信息
-	//4.生成token
-	//5.返回token
 	var userReq doMiniProgramLoginRequest
 	if err := context.ShouldBindJSON(&userReq); err != nil {
 		http_util.Error(context, app_code.WithError(app_code.ErrorBadRequest, err))
@@ -73,7 +68,7 @@ func (ur userRoutes) miniProgramLogin(context *gin.Context) {
 		http_util.Error(context, err)
 		return
 	}
-
+	glog.Infof("token %s ,err %s", token, err)
 	http_util.Success(context, doMiniProgramLoginResponse{Token: token, UserID: user.ID, Username: user.Username, Phone: user.Phone})
 }
 
@@ -187,6 +182,7 @@ type doUpdateUserSettingRequest struct {
 // @Tags 用户
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "jwt_token"
 // @Param jsonBody body entity.UserSetting true "用户设置"
 // @Success 200 {object} http_util.Response
 // @Failure 400 {object} http_util.Response
@@ -199,7 +195,7 @@ func (ur userRoutes) updateSetting(c *gin.Context) {
 		return
 	}
 	userID := http_util.GetUserID(c)
-
+	glog.Infof("getUserID %v", userID)
 	err := ur.u.UpdateSetting(c.Request.Context(), userID, request)
 	if err != nil {
 		http_util.Error(c, app_code.WithError(app_code.ErrorUpdateUserSetting, err))
@@ -213,7 +209,7 @@ func (ur userRoutes) updateSetting(c *gin.Context) {
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Param userID query int true "用户ID"
+// @Param Authorization header string true "jwt_token"
 // @Success 200 {object} http_util.Response{data=entity.UserSetting}
 // @Failure 400 {object} http_util.Response
 // @Failure 500 {object} http_util.Response

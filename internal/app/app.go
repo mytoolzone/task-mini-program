@@ -4,6 +4,7 @@ package app
 import (
 	"fmt"
 	"github.com/mytoolzone/task-mini-program/pkg/auth"
+	"github.com/mytoolzone/task-mini-program/pkg/wechat"
 	"os"
 	"os/signal"
 	"syscall"
@@ -30,7 +31,8 @@ func Run(cfg *config.Config) {
 	}
 	defer pg.Close()
 
-	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg))
+	wxApp := wechat.NewMiniProgram(cfg.WeChat.AppID, cfg.WeChat.AppSecret)
+	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg), wxApp)
 	noticeUseCase := usecase.NewNoticeUseCase(repo.NewNoticeRepo(pg))
 	taskUseCase := usecase.NewTaskUseCase(repo.NewTaskRepo(pg), repo.NewTaskRunRepo(pg), repo.NewTaskRunUserRepo(pg), repo.NewTaskRunLogRepo(pg), repo.NewUserTaskRepo(pg))
 	jwtAuth := auth.NewAuthJwt([]byte(cfg.JWT.Secret), cfg.App.Name)

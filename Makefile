@@ -3,6 +3,8 @@ export
 
 LOCAL_BIN:=$(CURDIR)/bin
 PATH:=$(LOCAL_BIN):$(PATH)
+DOCKER_IMAGE_NAME:=xytschool/task-mini-program
+DOCKER_IMAGE_TAG:=0.0.11
 
 # HELP =================================================================================================================
 # This will output the help for each task
@@ -15,6 +17,16 @@ help: ## Display this help screen
 compose-up: ### Run docker-compose
 	docker-compose up --build -d postgres rabbitmq && docker-compose logs -f
 .PHONY: compose-up
+
+docker-build: ### Build docker image
+	docker build -t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) .
+.PHONY: doker-build
+
+docker-push: ### Push docker image
+	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
+.PHONY: docker-push
+
+docker: docker-build docker-push
 
 compose-up-integration-test: ### Run docker-compose with integration test
 	docker-compose up --build --abort-on-container-exit --exit-code-from integration

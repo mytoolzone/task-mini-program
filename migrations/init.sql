@@ -1,6 +1,6 @@
 -- 创建 ENUM 类型
 CREATE TYPE user_status AS ENUM ('active', 'frozen');
-CREATE TYPE task_status AS ENUM ('publish', 'audit_fail','audit_pass', 'pending', 'running', 'paused', 'finished', 'canceled', 'deleted');
+CREATE TYPE task_status AS ENUM ('create','publish', 'audit_fail','audit_pass', 'pending', 'running', 'paused', 'finished', 'canceled', 'deleted');
 CREATE TYPE task_user_status AS ENUM ('apply', 'approved', 'rejected');
 CREATE TYPE task_user_role AS ENUM ('leader', 'member', 'recorder', 'none');
 CREATE TYPE notice_status AS ENUM ('unread', 'read');

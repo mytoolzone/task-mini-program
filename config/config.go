@@ -7,11 +7,12 @@ import (
 type (
 	// Config -.
 	Config struct {
-		App  `yaml:"server-cmd"`
-		HTTP `yaml:"http"`
-		Log  `yaml:"logger"`
-		PG   `yaml:"postgres"`
-		JWT  `yaml:"jwt"`
+		App    `yaml:"server-cmd"`
+		HTTP   `yaml:"http"`
+		Log    `yaml:"logger"`
+		PG     `yaml:"postgres"`
+		JWT    `yaml:"jwt"`
+		WeChat `yaml:"we-chat"`
 		//RMQ  `yaml:"rabbitmq"`
 	}
 
@@ -41,6 +42,14 @@ type (
 	JWT struct {
 		Secret string `yaml:"secret" env:"JWT_SECRET"`
 		Expire int    `yaml:"expire" env:"JWT_EXPIRE"`
+	}
+
+	// WeChat -.
+	WeChat struct {
+		AppID     string `yaml:"app_id"     env:"WECHAT_APP_ID"`
+		AppSecret string `yaml:"app_secret" env:"WECHAT_APP_SECRET"`
+		Token     string `yaml:"token"      env:"WECHAT_TOKEN"`
+		Encoding  string `yaml:"encoding"   env:"WECHAT_ENCODING"`
 	}
 )
 

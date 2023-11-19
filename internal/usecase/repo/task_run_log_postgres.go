@@ -2,8 +2,10 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
+	"gorm.io/gorm"
 )
 
 type TaskRunLogRepo struct {
@@ -21,8 +23,17 @@ func (t TaskRunLogRepo) AddTaskRunLog(ctx context.Context, log *entity.TaskRunLo
 	return nil
 }
 
-func (t TaskRunLogRepo) GetTaskRunLogList(ctx context.Context, taskID int) ([]entity.TaskRunLog, error) {
+func (t TaskRunLogRepo) GetTaskRunLogList(ctx context.Context, taskID, lastID int) ([]entity.TaskRunLog, error) {
 	var taskRunLogs []entity.TaskRunLog
-	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).First(&taskRunLogs).Error
-	return taskRunLogs, err
+	query := t.Db.WithContext(ctx).Where("task_id = ?", taskID)
+
+	if lastID > 0 {
+		query = query.Where("id <?", lastID)
+	}
+
+	err := query.Limit(50).Order("id desc").Find(&taskRunLogs).Error
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	return taskRunLogs, nil
 }

@@ -13,6 +13,7 @@ const TableNameNotice = "notices"
 // Notice mapped from table <notices>
 type Notice struct {
 	ID        int       `gorm:"column:id;primaryKey;autoIncrement:true" json:"id"`
+	Title     string    `gorm:"column:title;not null" json:"title"`
 	UserID    int       `gorm:"column:user_id" json:"user_id"`
 	Content   string    `gorm:"column:content;not null" json:"content"`
 	Status    string    `gorm:"column:status" json:"status"`

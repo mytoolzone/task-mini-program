@@ -7,7 +7,9 @@ definitions:
     - password_error
     - service_error
     - auth_failed
+    - wx_auth_failed
     - token_not_set
+    - repeat
     - token_timeout
     - forbidden
     - user_exist
@@ -27,7 +29,9 @@ definitions:
     - ErrorUserPassword
     - ErrorServerError
     - ErrorAuthFailed
+    - ErrorWxAuthFailed
     - ErrorTokenNotSet
+    - ErrorRepeat
     - ErrorTokenTimeout
     - ErrorForbidden
     - ErrorUserExist
@@ -49,6 +53,8 @@ definitions:
       id:
         type: integer
       status:
+        type: string
+      title:
         type: string
       user_id:
         type: integer
@@ -79,8 +85,8 @@ definitions:
       created_at:
         type: string
       duration:
-        type: string
-      endat:
+        type: integer
+      end_at:
         type: string
       id:
         type: integer
@@ -124,11 +130,15 @@ definitions:
         type: string
       education:
         type: string
+      email:
+        type: string
       height:
         type: string
       insurance:
         type: string
       job:
+        type: string
+      phone:
         type: string
       tags:
         type: string
@@ -167,6 +177,32 @@ definitions:
       error:
         example: error message
         type: string
+    type: object
+  v1.Task:
+    properties:
+      describe:
+        type: string
+      location:
+        type: string
+      name:
+        type: string
+      require:
+        type: string
+    type: object
+  v1.UploadRunLogRequest:
+    properties:
+      content:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      taskID:
+        type: integer
+      videos:
+        items:
+          type: string
+        type: array
     type: object
   v1.doLoginRequest:
     properties:
@@ -224,7 +260,7 @@ definitions:
       userId:
         type: integer
     type: object
-host: localhost:8080
+host: task.mytool.zone
 info:
   contact: {}
   description: Task Mini Program API
@@ -237,6 +273,11 @@ paths:
       - application/json
       description: 获取用户通知详情
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: 通知ID
         in: query
         name: noticeID
@@ -270,6 +311,12 @@ paths:
       consumes:
       - application/json
       description: 获取用户通知列表
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -302,6 +349,11 @@ paths:
       description: 用户申请参加任务
       operationId: apply-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -332,12 +384,20 @@ paths:
       description: 管理员审核任务
       operationId: audit-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
         required: true
         type: integer
       - description: auditStatus
+        enum:
+        - rejected
+        - approved
         in: query
         name: auditStatus
         required: true
@@ -367,6 +427,11 @@ paths:
       description: 管理员审核用户参加任务
       operationId: audit-user-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -378,6 +443,9 @@ paths:
         required: true
         type: integer
       - description: auditStatus
+        enum:
+        - rejected
+        - approved
         in: query
         name: auditStatus
         required: true
@@ -407,6 +475,11 @@ paths:
       description: 取消任务
       operationId: cancel-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -436,13 +509,30 @@ paths:
       - application/json
       description: 创建任务
       operationId: create-task
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: 创建任务
+        in: body
+        name: jsonBody
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Task'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http_util.Response'
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.Task'
+              type: object
         "400":
           description: Bad Request
           schema:
@@ -461,6 +551,11 @@ paths:
       description: 获取任务详情
       operationId: detail
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -496,6 +591,11 @@ paths:
       description: 完成任务
       operationId: finish-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -526,10 +626,29 @@ paths:
       description: 获取任务列表
       operationId: list
       parameters:
-      - description: lastId
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: lastID
         in: query
-        name: lastId
+        name: lastID
         type: integer
+      - description: status
+        enum:
+        - torun
+        - audit_fail
+        - join
+        - new
+        - running
+        - paused
+        - finished
+        - canceled
+        - deleted
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
@@ -562,6 +681,11 @@ paths:
       description: 暂停任务
       operationId: pause-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -592,6 +716,11 @@ paths:
       description: 获取签到二维码
       operationId: prepare-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -627,14 +756,19 @@ paths:
       description: 获取任务运行日志列表
       operationId: run-log-list
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
         required: true
         type: integer
-      - description: lastId
+      - description: lastID
         in: query
-        name: lastId
+        name: lastID
         type: integer
       produces:
       - application/json
@@ -668,6 +802,11 @@ paths:
       description: 签到
       operationId: sign-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -703,6 +842,11 @@ paths:
       description: 开始任务
       operationId: start-task
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskRunID
@@ -733,12 +877,17 @@ paths:
       description: 上报任务运行日志列表
       operationId: upload-run-log
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: 上报任务运行日志
         in: body
         name: jsonBody
         required: true
         schema:
-          $ref: '#/definitions/entity.TaskRunLog'
+          $ref: '#/definitions/v1.UploadRunLogRequest'
       produces:
       - application/json
       responses:
@@ -764,6 +913,11 @@ paths:
       description: 获取某人任务列表
       operationId: user-task-list
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: userID
         in: query
         name: userID
@@ -799,8 +953,13 @@ paths:
       consumes:
       - application/json
       description: 获取任务用户列表
-      operationId: user-list
+      operationId: apply-user-list
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: taskID
         in: query
         name: taskID
@@ -828,7 +987,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http_util.Response'
-      summary: User list
+      summary: Apply Task User list
       tags:
       - task
   /user/getSetting:
@@ -837,11 +996,11 @@ paths:
       - application/json
       description: 获取用户设置
       parameters:
-      - description: 用户ID
-        in: query
-        name: userID
+      - description: jwt_token
+        in: header
+        name: Authorization
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -976,6 +1135,11 @@ paths:
       - application/json
       description: 更新用户设置
       parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: 用户设置
         in: body
         name: jsonBody

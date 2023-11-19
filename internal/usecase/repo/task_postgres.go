@@ -2,43 +2,63 @@ package repo
 
 import (
 	"context"
+	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
+	"strings"
 )
 
 type TaskRepo struct {
 	*postgres.Postgres
 }
 
-func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) error {
+func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	if task.Status != entity.TaskStatusNew {
+		return nil, app_code.New(app_code.ErrorRepeat, "任务已经审核完成")
+	}
+
+	// 任务审核失败
 	task.Status = entity.TaskStatusAuditFail
-	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
+	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
 }
 
-func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) error {
+func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	if task.Status != entity.TaskStatusNew {
+		return nil, app_code.New(app_code.ErrorRepeat, "任务已经审核完成")
+	}
+
 	// 任务审核通过待执行
-	task.Status = entity.TaskStatusPending
-	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
+	task.Status = entity.TaskStatusTorun
+	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
+	if err != nil {
+		return nil, err
+	}
+	return &task, nil
 }
 
 func (t *TaskRepo) CreateTask(ctx context.Context, task *entity.Task) error {
-	task.Status = entity.TaskStatusPublish
 	return t.Db.Create(task).Error
 }
 
 func (t *TaskRepo) GetByUserID(ctx context.Context, userID int) ([]entity.Task, error) {
 	var tasks []entity.Task
-	err := t.Db.WithContext(ctx).Where("user_id = ?", userID).Find(&tasks).Error
+	err := t.Db.WithContext(ctx).Where("create_by = ?", userID).Find(&tasks).Error
 	return tasks, err
 }
 
@@ -49,9 +69,23 @@ func (t *TaskRepo) GetByTaskID(ctx context.Context, taskID int) (entity.Task, er
 }
 
 // GetTaskList 瀑布流方式获取任务列表
-func (t *TaskRepo) GetTaskList(ctx context.Context, lastId int) ([]entity.Task, error) {
+func (t *TaskRepo) GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error) {
 	var tasks []entity.Task
-	err := t.Db.WithContext(ctx).Where("id < ?", lastId).Find(&tasks).Error
+	query := t.Db.WithContext(ctx)
+	if lastId > 0 {
+		query = query.Where("id < ?", lastId)
+	}
+
+	if status != "" {
+		statusArr := strings.Split(status, ",")
+		query = query.Where("status in(?)", statusArr)
+	}
+
+	if keyword != "" {
+		query = query.Where("name like ?", "%"+keyword+"%")
+	}
+
+	err := query.Order("id desc").Find(&tasks).Error
 	return tasks, err
 }
 

@@ -14,4 +14,6 @@ type UserSetting struct {
 	Card       string `gorm:"column:card" json:"card"`
 	Weight     string `gorm:"column:weight" json:"weight"`
 	Height     string `gorm:"column:height" json:"height"`
+	Phone      string `gorm:"column:phone" json:"phone"`
+	Email      string `gorm:"column:email" json:"email"`
 }
