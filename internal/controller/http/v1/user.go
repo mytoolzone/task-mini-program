@@ -38,6 +38,7 @@ type doMiniProgramLoginResponse struct {
 	UserID   int    `json:"userId"`
 	Username string `json:"username"`
 	Phone    string `json:"phone"`
+	Role     string `json:"role"`
 }
 
 // @Summary 小程序登录
@@ -68,8 +69,21 @@ func (ur userRoutes) miniProgramLogin(context *gin.Context) {
 		http_util.Error(context, err)
 		return
 	}
-	glog.Infof("token %s ,err %s", token, err)
-	http_util.Success(context, doMiniProgramLoginResponse{Token: token, UserID: user.ID, Username: user.Username, Phone: user.Phone})
+	var role = entity.UserRoleMember
+	roleModel, err := ur.u.GetUserRole(context.Request.Context(), user.ID)
+	if err != nil {
+		glog.WithErr(err).Error("获取用户角色失败")
+	} else {
+		role = roleModel.Role
+	}
+
+	http_util.Success(context, doMiniProgramLoginResponse{
+		Token:    token,
+		UserID:   user.ID,
+		Username: user.Username,
+		Phone:    user.Phone,
+		Role:     role,
+	})
 }
 
 type doLoginRequest struct {
