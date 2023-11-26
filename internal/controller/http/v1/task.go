@@ -29,8 +29,12 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 		h.GET("/list", ur.list)
 		// 审核任务
 		h.POST("/auditTask", ur.auditTask)
+		// 分配参与任务人角色
+		h.POST("/assignRole", ur.assignRole)
 		// 报名任务
 		h.POST("/apply", ur.apply)
+		// 获取任务报名用户列表
+		h.GET("/applyUsers", ur.applyUserList)
 		// 审核报名
 		h.POST("/auditUserTask", ur.auditUserTask)
 		// 获取签到二维码
@@ -51,10 +55,10 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 		h.GET("/runLogs", ur.runLogList)
 		// 获取任务用户列表
 		h.GET("/users", ur.userList)
-		// 获取任务用户列表
-		h.GET("/applyUsers", ur.applyUserList)
-		// 获取某人任务列表
+		// 获取某人创建的任务列表
 		h.GET("/userTasks", ur.userTaskList)
+		// 获取某个人参加的任务
+		h.GET("/userJoinTask", ur.userJoinTask)
 		// 获取某个用户的统计数据
 		h.GET("/userSummary", ur.userSummary)
 	}
@@ -210,6 +214,46 @@ func (r taskRoutes) auditTask(ctx *gin.Context) {
 		}
 	}()
 
+	http_util.Success(ctx, nil)
+}
+
+// @Summary     Assign role
+// @Description 管理员分配任务角色
+// @ID          assign-role
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Param       userID query int true "userID"
+// @Param       role query string true "role" Enums(leader, member, recorder)
+// @Success     200 {object} http_util.Response
+// @Failure     400 {object} http_util.Response
+// @Router      /task/assignRole [post]
+func (r taskRoutes) assignRole(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+	role, _ := ctx.GetQuery("role")
+	if role == "" {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "role is required"))
+		return
+	}
+	userIDStr, _ := ctx.GetQuery("userID")
+	userID, _ := strconv.Atoi(userIDStr)
+	if userID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "userID is required"))
+		return
+	}
+
+	err := r.task.AssignRole(ctx.Request.Context(), taskID, userID, role)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
 	http_util.Success(ctx, nil)
 }
 
@@ -534,7 +578,7 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 }
 
 // @Summary     Apply Task User list
-// @Description 获取任务用户列表
+// @Description 获取任务报名用户列表
 // @ID          apply-user-list
 // @Tags  	    task
 // @Accept      json
@@ -563,25 +607,57 @@ func (r taskRoutes) applyUserList(ctx *gin.Context) {
 }
 
 // @Summary     User task list
-// @Description 获取某人任务列表
+// @Description 获取某人创建的任务列表
 // @ID          user-task-list
 // @Tags  	    task
 // @Accept      json
 // @Produce     json
 // @Param Authorization header string true "jwt_token"
 // @Param       userID query int true "userID"
+// @Param       lastID query int false "lastID"
+// @Param       status query string false "status" enum(new, running, pause, finish, cancel)
 // @Success     200 {object} http_util.Response{data=[]entity.Task}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
 // @Router      /task/userTasks [get]
 func (r taskRoutes) userTaskList(ctx *gin.Context) {
 	userID := http_util.GetUserID(ctx)
-	tasks, err := r.task.GetByUserID(ctx.Request.Context(), userID)
+	lastIdStr, _ := ctx.GetQuery("lastID")
+	lastId, _ := strconv.Atoi(lastIdStr)
+	status := ctx.Query("status")
+	tasks, err := r.task.GetByUserID(ctx.Request.Context(), userID, status, lastId)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
 	}
 
+	http_util.Success(ctx, tasks)
+}
+
+// @Summary     User task list
+// @Description 获取某人参加的任务列表
+// @ID          user-join-tasks
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       userID query int true "userID"
+// @Param       lastID query int false "lastID"
+// @Param       status query string false "status" enum(apply,rejected,approved,running,finish,cancel)
+// @Success     200 {object} http_util.Response{data=[]entity.Task}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/userTasks [get]
+func (r taskRoutes) userJoinTask(ctx *gin.Context) {
+	userID := http_util.GetUserID(ctx)
+	lastIdStr, _ := ctx.GetQuery("lastID")
+	lastId, _ := strconv.Atoi(lastIdStr)
+	status := ctx.Query("status")
+	tasks, err := r.task.GetUserJoinTaskList(ctx.Request.Context(), userID, status, lastId)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
 	http_util.Success(ctx, tasks)
 }
 

@@ -46,7 +46,25 @@ func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, sta
 	return UserTask, nil
 }
 
-func (t UserTaskRepo) GetUserTaskList(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
+// AssignRole 分配角色
+func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role string) error {
+	if role != entity.UserTaskRoleRecorder && role != entity.UserTaskRoleLeader && role != entity.UserTaskRoleMember {
+		return app_code.New(app_code.ErrorAuditParamInValid, "role invalid")
+	}
+
+	var UserTask entity.UserTask = entity.UserTask{
+		TaskID: taskID,
+		UserID: userID,
+		Role:   role,
+	}
+
+	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Updates(&UserTask).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t UserTaskRepo) GetTaskUserList(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
 	var UserTasks []entity.UserTask
 	query := t.Db.WithContext(ctx).Where("task_id = ?", taskID)
 	if status != "" {
@@ -61,4 +79,18 @@ func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID in
 	var UserTask entity.UserTask
 	err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&UserTask).Error
 	return UserTask, err
+}
+
+// GetUserJoinTaskList 获取某个人参与的任务列表
+func (t *UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+	var tasks []entity.UserTask
+	query := t.Db.WithContext(ctx).Where("create_by = ?", userID)
+	if lastID > 0 {
+		query = query.Where("id < ?", lastID)
+	}
+	if status != "" {
+		query = query.Where("status = ?)", status)
+	}
+	err := query.Find(&tasks).Error
+	return tasks, err
 }

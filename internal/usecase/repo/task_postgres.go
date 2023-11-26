@@ -56,9 +56,16 @@ func (t *TaskRepo) CreateTask(ctx context.Context, task *entity.Task) error {
 	return t.Db.Create(task).Error
 }
 
-func (t *TaskRepo) GetByUserID(ctx context.Context, userID int) ([]entity.Task, error) {
+func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
 	var tasks []entity.Task
-	err := t.Db.WithContext(ctx).Where("create_by = ?", userID).Find(&tasks).Error
+	query := t.Db.WithContext(ctx).Where("create_by = ?", userID)
+	if lastID > 0 {
+		query = query.Where("id < ?", lastID)
+	}
+	if status != "" {
+		query = query.Where("status = ?)", status)
+	}
+	err := query.Find(&tasks).Error
 	return tasks, err
 }
 

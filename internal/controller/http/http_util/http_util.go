@@ -16,6 +16,7 @@ type Response struct {
 const (
 	ctxUserIDKey = "ctxUserID"
 	ctxUserName  = "ctxUserName"
+	ctxUserRole  = "ctxUserRole"
 )
 
 func Success(ctx *gin.Context, data interface{}) {
@@ -67,6 +68,11 @@ func GetUserID(ctx *gin.Context) int {
 // SetUserID 将用户 id 设置到 ctx 中
 func SetUserID(ctx *gin.Context, userID int) {
 	ctx.Set(ctxUserIDKey, userID)
+}
+
+// SetUserRole 将用户角色设置到 ctx 中
+func SetUserRole(ctx *gin.Context, role string) {
+	ctx.Set(ctxUserRole, role)
 }
 
 // SetUserName 将用户名设置到 ctx 中

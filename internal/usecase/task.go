@@ -35,8 +35,8 @@ func (t TaskUseCase) GetTaskDetail(ctx context.Context, taskID int) (entity.Task
 	return t.t.GetByTaskID(ctx, taskID)
 }
 
-func (t TaskUseCase) GetByUserID(ctx context.Context, userID int) ([]entity.Task, error) {
-	return t.t.GetByUserID(ctx, userID)
+func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
+	return t.t.GetByUserID(ctx, userID, status, lastID)
 }
 
 func (t TaskUseCase) GetByTaskID(ctx context.Context, taskID int) (entity.Task, error) {
@@ -48,7 +48,7 @@ func (t TaskUseCase) GetTaskList(ctx context.Context, lastID int, keyword, statu
 }
 
 func (t TaskUseCase) GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
-	return t.tu.GetUserTaskList(ctx, taskID, status)
+	return t.tu.GetTaskUserList(ctx, taskID, status)
 }
 
 func (t TaskUseCase) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error) {
@@ -315,4 +315,12 @@ func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, stat
 
 func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error) {
 	return t.tru.GetUserTaskSummary(ctx, userID)
+}
+
+func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+	return t.tu.GetUserJoinTaskList(ctx, userID, status, lastID)
+}
+
+func (t TaskUseCase) AssignRole(ctx context.Context, taskID, userID int, role string) error {
+	return t.tu.AssignRole(ctx, taskID, userID, role)
 }
