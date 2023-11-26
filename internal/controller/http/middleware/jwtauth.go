@@ -42,7 +42,6 @@ func JWT(authH auth.Auth) gin.HandlerFunc {
 			return
 		}
 
-		glog.Infof("userId -------------- %v", claim.UserID)
 		// 将解析出来的用户id放入上下文
 		http_util.SetUserID(c, claim.UserID)
 		http_util.SetUserName(c, claim.Username)

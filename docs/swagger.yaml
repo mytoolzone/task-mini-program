@@ -118,31 +118,53 @@ definitions:
     type: object
   entity.UserSetting:
     properties:
-      avatar:
-        type: string
-      background:
+      address:
         type: string
       birthday:
-        type: string
-      card:
-        type: string
-      describe:
         type: string
       education:
         type: string
       email:
         type: string
-      height:
+      emergency_contact:
         type: string
-      insurance:
+      emergency_phone:
         type: string
-      job:
+      emergency_relationship:
+        type: string
+      idcard:
+        type: string
+      insurance_end:
+        type: string
+      insurance_name:
+        type: string
+      insurance_photo:
+        type: string
+      insurance_start:
+        type: string
+      intro:
+        type: string
+      intro_user_id:
+        type: string
+      login_name:
+        type: string
+      married:
+        type: string
+      mingzu:
+        type: string
+      name:
         type: string
       phone:
         type: string
-      tags:
+      region:
         type: string
-      weight:
+      sex:
+        type: string
+      user_id:
+        type: string
+      wechat_name:
+        type: string
+      work_category:
         type: string
     type: object
   entity.UserTask:
@@ -216,6 +238,8 @@ definitions:
     type: object
   v1.doLoginResponse:
     properties:
+      role:
+        type: string
       token:
         type: string
       userId:
@@ -377,12 +401,12 @@ paths:
       summary: Apply task
       tags:
       - task
-  /task/auditTask:
+  /task/assignRole:
     post:
       consumes:
       - application/json
-      description: 管理员审核任务
-      operationId: audit-task
+      description: 管理员分配任务角色
+      operationId: assign-role
       parameters:
       - description: jwt_token
         in: header
@@ -394,12 +418,18 @@ paths:
         name: taskID
         required: true
         type: integer
-      - description: auditStatus
-        enum:
-        - rejected
-        - approved
+      - description: userID
         in: query
-        name: auditStatus
+        name: userID
+        required: true
+        type: integer
+      - description: role
+        enum:
+        - leader
+        - member
+        - recorder
+        in: query
+        name: role
         required: true
         type: string
       produces:
@@ -413,14 +443,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/http_util.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http_util.Response'
-      summary: Audit task
+      summary: Assign role
       tags:
       - task
-  /task/auditUserTask:
+  /task/auditApplyTask:
     post:
       consumes:
       - application/json
@@ -466,6 +492,49 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: Audit user task
+      tags:
+      - task
+  /task/auditTask:
+    post:
+      consumes:
+      - application/json
+      description: 管理员审核任务
+      operationId: audit-task
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      - description: auditStatus
+        enum:
+        - rejected
+        - approved
+        in: query
+        name: auditStatus
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: Audit task
       tags:
       - task
   /task/cancel:
@@ -910,8 +979,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取某人任务列表
-      operationId: user-task-list
+      description: 获取某人参加的任务列表
+      operationId: user-join-tasks
       parameters:
       - description: jwt_token
         in: header
@@ -923,6 +992,14 @@ paths:
         name: userID
         required: true
         type: integer
+      - description: lastID
+        in: query
+        name: lastID
+        type: integer
+      - description: status
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
@@ -952,7 +1029,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取任务用户列表
+      description: 获取任务报名用户列表
       operationId: apply-user-list
       parameters:
       - description: jwt_token

@@ -48,10 +48,12 @@ func NewRouter(handler *gin.Engine,
 	// Routers
 	hl := handler.Group("/v1")
 	jwt := middleware.JWT(auth)
+	checkRole := middleware.CheckRole(u)
+
 	{
-		newTaskRoutes(hl, jwt, tk, n)
-		newUserRoutes(hl, jwt, auth, u)
-		newNoticeRoutes(hl, jwt, n)
+		newTaskRoutes(hl, jwt, checkRole, tk, n)
+		newUserRoutes(hl, jwt, checkRole, auth, u)
+		newNoticeRoutes(hl, jwt, checkRole, n)
 	}
 
 	// Static files

@@ -16,6 +16,7 @@ type (
 		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
 		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
 		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
+		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
 	}
 
 	// UserRepo -.
@@ -26,6 +27,7 @@ type (
 		UpdateUserSetting(ctx context.Context, userID int, setting entity.UserSetting) error
 		GetByUserName(ctx context.Context, username string) (entity.User, error)
 		GetByOpenId(ctx context.Context, id string) (user entity.User, exist bool, err error)
+		GetUserRole(ctx context.Context, id int) (entity.UserRole, error)
 	}
 
 	// Task -.

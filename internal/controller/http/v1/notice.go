@@ -12,7 +12,7 @@ type noticeRoutes struct {
 	n usecase.Notice
 }
 
-func newNoticeRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Notice) {
+func newNoticeRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, roleH gin.HandlerFunc, u usecase.Notice) {
 	ur := noticeRoutes{u}
 
 	h := handler.Group("/notice", auth)

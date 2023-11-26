@@ -108,3 +108,8 @@ func (u UserUseCase) GetSettingByUserID(ctx context.Context, userID int) (entity
 	}
 	return setting, nil
 }
+
+// GetUserRole 获取用户角色
+func (u UserUseCase) GetUserRole(ctx context.Context, userID int) (entity.UserRole, error) {
+	return u.repo.GetUserRole(ctx, userID)
+}

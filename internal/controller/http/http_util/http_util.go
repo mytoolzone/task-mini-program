@@ -75,6 +75,11 @@ func SetUserRole(ctx *gin.Context, role string) {
 	ctx.Set(ctxUserRole, role)
 }
 
+// GetUserRole 从 ctx 中获取用户角色
+func GetUserRole(ctx *gin.Context) string {
+	return ctx.GetString(ctxUserRole)
+}
+
 // SetUserName 将用户名设置到 ctx 中
 func SetUserName(ctx *gin.Context, userName string) {
 	ctx.Set(ctxUserName, userName)

@@ -189,9 +189,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/task/auditTask": {
+        "/task/assignRole": {
             "post": {
-                "description": "管理员审核任务",
+                "description": "管理员分配任务角色",
                 "consumes": [
                     "application/json"
                 ],
@@ -201,8 +201,8 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Audit task",
-                "operationId": "audit-task",
+                "summary": "Assign role",
+                "operationId": "assign-role",
                 "parameters": [
                     {
                         "type": "string",
@@ -215,6 +215,78 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "leader",
+                            "member",
+                            "recorder"
+                        ],
+                        "type": "string",
+                        "description": "role",
+                        "name": "role",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/auditApplyTask": {
+            "post": {
+                "description": "管理员审核用户参加任务",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Audit user task",
+                "operationId": "audit-user-task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taskID",
+                        "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
                         "in": "query",
                         "required": true
                     },
@@ -252,9 +324,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/task/auditUserTask": {
+        "/task/auditTask": {
             "post": {
-                "description": "管理员审核用户参加任务",
+                "description": "管理员审核任务",
                 "consumes": [
                     "application/json"
                 ],
@@ -264,8 +336,8 @@ const docTemplate = `{
                 "tags": [
                     "task"
                 ],
-                "summary": "Audit user task",
-                "operationId": "audit-user-task",
+                "summary": "Audit task",
+                "operationId": "audit-task",
                 "parameters": [
                     {
                         "type": "string",
@@ -278,13 +350,6 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "taskID",
                         "name": "taskID",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "userID",
-                        "name": "userID",
                         "in": "query",
                         "required": true
                     },
@@ -995,7 +1060,7 @@ const docTemplate = `{
         },
         "/task/userTasks": {
             "get": {
-                "description": "获取某人任务列表",
+                "description": "获取某人参加的任务列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -1006,7 +1071,7 @@ const docTemplate = `{
                     "task"
                 ],
                 "summary": "User task list",
-                "operationId": "user-task-list",
+                "operationId": "user-join-tasks",
                 "parameters": [
                     {
                         "type": "string",
@@ -1021,6 +1086,18 @@ const docTemplate = `{
                         "name": "userID",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "lastID",
+                        "name": "lastID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1062,7 +1139,7 @@ const docTemplate = `{
         },
         "/task/users": {
             "get": {
-                "description": "获取任务用户列表",
+                "description": "获取任务报名用户列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -1572,19 +1649,10 @@ const docTemplate = `{
         "entity.UserSetting": {
             "type": "object",
             "properties": {
-                "avatar": {
-                    "type": "string"
-                },
-                "background": {
+                "address": {
                     "type": "string"
                 },
                 "birthday": {
-                    "type": "string"
-                },
-                "card": {
-                    "type": "string"
-                },
-                "describe": {
                     "type": "string"
                 },
                 "education": {
@@ -1593,22 +1661,64 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "height": {
+                "emergency_contact": {
                     "type": "string"
                 },
-                "insurance": {
+                "emergency_phone": {
                     "type": "string"
                 },
-                "job": {
+                "emergency_relationship": {
+                    "type": "string"
+                },
+                "idcard": {
+                    "type": "string"
+                },
+                "insurance_end": {
+                    "type": "string"
+                },
+                "insurance_name": {
+                    "type": "string"
+                },
+                "insurance_photo": {
+                    "type": "string"
+                },
+                "insurance_start": {
+                    "type": "string"
+                },
+                "intro": {
+                    "type": "string"
+                },
+                "intro_user_id": {
+                    "type": "string"
+                },
+                "login_name": {
+                    "type": "string"
+                },
+                "married": {
+                    "type": "string"
+                },
+                "mingzu": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "phone": {
                     "type": "string"
                 },
-                "tags": {
+                "region": {
                     "type": "string"
                 },
-                "weight": {
+                "sex": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "wechat_name": {
+                    "type": "string"
+                },
+                "work_category": {
                     "type": "string"
                 }
             }
@@ -1723,6 +1833,9 @@ const docTemplate = `{
         "v1.doLoginResponse": {
             "type": "object",
             "properties": {
+                "role": {
+                    "type": "string"
+                },
                 "token": {
                     "type": "string"
                 },

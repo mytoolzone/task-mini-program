@@ -88,3 +88,11 @@ func (u *UserRepo) GetByOpenId(ctx context.Context, openID string) (entity.User,
 	}
 	return user, false, err
 }
+
+func (u *UserRepo) GetUserRole(ctx context.Context, userID int) (entity.UserRole, error) {
+	var userRole entity.UserRole
+	if err := u.Db.WithContext(ctx).Where("user_id =?", userID).First(&userRole).Error; err != nil {
+		return entity.UserRole{}, err
+	}
+	return userRole, nil
+}

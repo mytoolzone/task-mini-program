@@ -16,7 +16,7 @@ type userRoutes struct {
 	a auth.Auth
 }
 
-func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, a auth.Auth, u usecase.User) {
+func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, roleH gin.HandlerFunc, a auth.Auth, u usecase.User) {
 	ur := userRoutes{u, a}
 
 	h := handler.Group("/user")
@@ -81,6 +81,7 @@ type doLoginResponse struct {
 	Token    string `json:"token"`
 	UserID   int    `json:"userId"`
 	Username string `json:"username"`
+	Role     string `json:"role"`
 }
 
 // @Summary 登录
@@ -118,7 +119,20 @@ func (ur userRoutes) login(context *gin.Context) {
 		return
 	}
 
-	http_util.Success(context, doLoginResponse{Token: token, UserID: user.ID, Username: user.Username})
+	var role = entity.UserRoleMember
+	roleModel, err := ur.u.GetUserRole(context.Request.Context(), user.ID)
+	if err != nil {
+		glog.WithErr(err).Error("获取用户角色失败")
+	} else {
+		role = roleModel.Role
+	}
+
+	http_util.Success(context, doLoginResponse{
+		Token:    token,
+		UserID:   user.ID,
+		Role:     role,
+		Username: user.Username},
+	)
 }
 
 type doRegisterRequest struct {

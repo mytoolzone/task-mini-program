@@ -36,6 +36,7 @@ func Run(cfg *config.Config) {
 	noticeUseCase := usecase.NewNoticeUseCase(repo.NewNoticeRepo(pg))
 	taskUseCase := usecase.NewTaskUseCase(repo.NewTaskRepo(pg), repo.NewTaskRunRepo(pg), repo.NewTaskRunUserRepo(pg), repo.NewTaskRunLogRepo(pg), repo.NewUserTaskRepo(pg))
 	jwtAuth := auth.NewAuthJwt([]byte(cfg.JWT.Secret), cfg.App.Name)
+
 	// HTTP Server
 	handler := gin.New()
 	v1.NewRouter(handler, l, userUseCase, taskUseCase, noticeUseCase, jwtAuth)

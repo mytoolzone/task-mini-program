@@ -16,10 +16,10 @@ type taskRoutes struct {
 	notice usecase.Notice
 }
 
-func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Task, n usecase.Notice) {
+func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.HandlerFunc, u usecase.Task, n usecase.Notice) {
 	ur := taskRoutes{u, n}
 
-	h := handler.Group("/task", auth)
+	h := handler.Group("/task", auth, role)
 	{
 		// 创建任务
 		h.POST("/create", ur.create)
@@ -36,7 +36,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, u usecase.Tas
 		// 获取任务报名用户列表
 		h.GET("/applyUsers", ur.applyUserList)
 		// 审核报名
-		h.POST("/auditUserTask", ur.auditUserTask)
+		h.POST("/auditApplyTask", ur.auditApplyTask)
 		// 获取签到二维码
 		h.GET("/prepare", ur.prepare)
 		// 签到
@@ -301,8 +301,8 @@ func (r taskRoutes) apply(ctx *gin.Context) {
 // @Success     200 {object} http_util.Response
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
-// @Router      /task/auditUserTask [post]
-func (r taskRoutes) auditUserTask(ctx *gin.Context) {
+// @Router      /task/auditApplyTask [post]
+func (r taskRoutes) auditApplyTask(ctx *gin.Context) {
 	taskIDStr, _ := ctx.GetQuery("taskID")
 	taskID, _ := strconv.Atoi(taskIDStr)
 	if taskID <= 0 {
