@@ -32,6 +32,12 @@ const (
 	StatusAuditApproved = "approved"
 )
 
+// 用户角色 管理员 一般用户
+const (
+	UserRoleAdmin = "admin"
+	UserRoleUser  = "user"
+)
+
 // 用户报名在任务中角色 队长 队员 记录员 其他
 const (
 	UserTaskRoleLeader   = "leader"
