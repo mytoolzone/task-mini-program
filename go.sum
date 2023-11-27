@@ -1010,8 +1010,8 @@ github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc/go.mod h1:DKyhr
 github.com/shopspring/decimal v1.2.0/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
-github.com/silenceper/wechat/v2 v2.1.5 h1:eIlv61v2bAFBG9ZE75zuRC0ALHEZEUq8JlJ9tfKvatg=
-github.com/silenceper/wechat/v2 v2.1.5/go.mod h1:7Iu3EhQYVtDUJAj+ZVRy8yom75ga7aDWv8RurLkVm0s=
+github.com/silenceper/wechat/v2 v2.1.6 h1:2br2DxNzhksmvIBJ+PfMqjqsvoZmd/5BnMIfjKYUBgc=
+github.com/silenceper/wechat/v2 v2.1.6/go.mod h1:7Iu3EhQYVtDUJAj+ZVRy8yom75ga7aDWv8RurLkVm0s=
 github.com/sirupsen/logrus v1.0.4-0.20170822132746-89742aefa4b2/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
 github.com/sirupsen/logrus v1.0.6/go.mod h1:pMByvHTf9Beacp5x1UXfOR9xyW/9antXMhjMPG0dEzc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
