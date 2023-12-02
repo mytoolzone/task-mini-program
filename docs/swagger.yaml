@@ -116,6 +116,31 @@ definitions:
       videos:
         type: string
     type: object
+  entity.User:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      ext:
+        type: string
+      id:
+        type: integer
+      openid:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
   entity.UserSetting:
     properties:
       address:
@@ -177,8 +202,12 @@ definitions:
         type: string
       status:
         type: string
+      task:
+        $ref: '#/definitions/entity.Task'
       task_id:
         type: integer
+      user:
+        $ref: '#/definitions/entity.User'
       user_id:
         type: integer
     type: object
@@ -188,6 +217,14 @@ definitions:
         type: integer
       total_task:
         type: integer
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
     type: object
   http_util.Response:
     properties:
@@ -257,6 +294,8 @@ definitions:
   v1.doMiniProgramLoginResponse:
     properties:
       phone:
+        type: string
+      role:
         type: string
       token:
         type: string
@@ -975,12 +1014,62 @@ paths:
       summary: Upload run log
       tags:
       - task
-  /task/userTasks:
+  /task/userJoinTask:
     get:
       consumes:
       - application/json
       description: 获取某人参加的任务列表
       operationId: user-join-tasks
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      - description: lastID
+        in: query
+        name: lastID
+        type: integer
+      - description: status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.Task'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: User task list
+      tags:
+      - task
+  /task/userTasks:
+    get:
+      consumes:
+      - application/json
+      description: 获取某人创建的任务列表
+      operationId: user-task-list
       parameters:
       - description: jwt_token
         in: header

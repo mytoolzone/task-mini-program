@@ -70,7 +70,7 @@ func (t UserTaskRepo) GetTaskUserList(ctx context.Context, taskID int, status st
 	if status != "" {
 		query = query.Where("status =?", status)
 	}
-	err := query.Debug().Find(&UserTasks).Error
+	err := query.Debug().Preload("User").Find(&UserTasks).Error
 	return UserTasks, err
 }
 
@@ -84,13 +84,13 @@ func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID in
 // GetUserJoinTaskList 获取某个人参与的任务列表
 func (t *UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
 	var tasks []entity.UserTask
-	query := t.Db.WithContext(ctx).Where("create_by = ?", userID)
+	query := t.Db.WithContext(ctx).Where("user_id = ?", userID)
 	if lastID > 0 {
 		query = query.Where("id < ?", lastID)
 	}
 	if status != "" {
 		query = query.Where("status = ?)", status)
 	}
-	err := query.Find(&tasks).Error
+	err := query.Debug().Preload("Task").Find(&tasks).Error
 	return tasks, err
 }

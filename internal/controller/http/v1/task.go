@@ -560,6 +560,7 @@ func (r taskRoutes) runLogList(ctx *gin.Context) {
 // @Failure     500 {object} http_util.Response
 // @Router      /task/users [get]
 func (r taskRoutes) userList(ctx *gin.Context) {
+
 	taskIDStr, _ := ctx.GetQuery("taskID")
 	taskID, _ := strconv.Atoi(taskIDStr)
 	if taskID <= 0 {
@@ -568,6 +569,7 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 	}
 
 	status := ctx.Query("status")
+
 	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, status)
 	if err != nil {
 		http_util.Error(ctx, err)
@@ -647,7 +649,7 @@ func (r taskRoutes) userTaskList(ctx *gin.Context) {
 // @Success     200 {object} http_util.Response{data=[]entity.Task}
 // @Failure     400 {object} http_util.Response
 // @Failure     500 {object} http_util.Response
-// @Router      /task/userTasks [get]
+// @Router      /task/userJoinTask [get]
 func (r taskRoutes) userJoinTask(ctx *gin.Context) {
 	userID := http_util.GetUserID(ctx)
 	lastIdStr, _ := ctx.GetQuery("lastID")

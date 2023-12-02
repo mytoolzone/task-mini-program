@@ -3,15 +3,15 @@ package entity
 // 定义任务的执行状态
 // 任务的执行状态有：新任务(发布待审核)、审核失败、报名(审核通过待报名), 待运行(报名结束等待运行), 运行、暂停、完成、取消
 const (
-	TaskStatusNew       = "new"
-	TaskStatusAuditFail = "audit_fail"
-	TaskStatusJoin      = "join"
-	TaskStatusTorun     = "torun"   // 开始报名
-	TaskStatusSign      = "sign"    // 开始报名
-	TaskStatusRunning   = "running" // 报名结束
-	TaskStatusPaused    = "paused"
-	TaskStatusFinished  = "finished"
-	TaskStatusCanceled  = "canceled"
+	TaskStatusNew       = "new"        // 新任务
+	TaskStatusAuditFail = "audit_fail" // 审核失败
+	TaskStatusJoin      = "join"       // 待报名
+	TaskStatusTorun     = "torun"      // 开始报名
+	TaskStatusSign      = "sign"       // 开始报名
+	TaskStatusRunning   = "running"    // 报名结束
+	TaskStatusPaused    = "paused"     // 暂停
+	TaskStatusFinished  = "finished"   // 完成
+	TaskStatusCanceled  = "canceled"   // 取消
 )
 
 // 用户状态 有效 冻结

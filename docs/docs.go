@@ -1058,7 +1058,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/task/userTasks": {
+        "/task/userJoinTask": {
             "get": {
                 "description": "获取某人参加的任务列表",
                 "consumes": [
@@ -1072,6 +1072,85 @@ const docTemplate = `{
                 ],
                 "summary": "User task list",
                 "operationId": "user-join-tasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "lastID",
+                        "name": "lastID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entity.Task"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/userTasks": {
+            "get": {
+                "description": "获取某人创建的任务列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "User task list",
+                "operationId": "user-task-list",
                 "parameters": [
                     {
                         "type": "string",
@@ -1646,6 +1725,44 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "ext": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "openid": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.UserSetting": {
             "type": "object",
             "properties": {
@@ -1738,8 +1855,14 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
+                "task": {
+                    "$ref": "#/definitions/entity.Task"
+                },
                 "task_id": {
                     "type": "integer"
+                },
+                "user": {
+                    "$ref": "#/definitions/entity.User"
                 },
                 "user_id": {
                     "type": "integer"
@@ -1754,6 +1877,18 @@ const docTemplate = `{
                 },
                 "total_task": {
                     "type": "integer"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
                 }
             }
         },
@@ -1862,6 +1997,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "phone": {
+                    "type": "string"
+                },
+                "role": {
                     "type": "string"
                 },
                 "token": {
