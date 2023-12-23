@@ -13,6 +13,7 @@ type (
 		PG     `yaml:"postgres"`
 		JWT    `yaml:"jwt"`
 		WeChat `yaml:"we-chat"`
+		File   `yaml:"file"`
 		//RMQ  `yaml:"rabbitmq"`
 	}
 
@@ -50,6 +51,11 @@ type (
 		AppSecret string `yaml:"app_secret" env:"WECHAT_APP_SECRET"`
 		Token     string `yaml:"token"      env:"WECHAT_TOKEN"`
 		Encoding  string `yaml:"encoding"   env:"WECHAT_ENCODING"`
+	}
+
+	// File -.
+	File struct {
+		RootDir string `yaml:"root_dir" env:"FILE_ROOT_DIR"`
 	}
 )
 

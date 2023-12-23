@@ -17,6 +17,7 @@ const (
 	ErrorTaskNotFound      CodeType = "task_not_found"
 	ErrorTaskExist         CodeType = "task_exist"
 	ErrorBadRequest        CodeType = "bad_request"
+	ErrorNotImage          CodeType = "not_image"
 	ErrorAuditParamInValid CodeType = "audit_param_invalid"
 	ErrorNotFound          CodeType = "not_found"
 	ErrorTaskRunNotFound   CodeType = "task_run_not_found"

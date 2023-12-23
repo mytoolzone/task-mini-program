@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"mime/multipart"
 
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 )
@@ -168,5 +169,11 @@ type (
 		GetNoticeListByUser(ctx context.Context, userID int) ([]entity.Notice, error)
 		// GetNoticeByNoticeID 获取通知详情 - 更新阅读通知状态
 		GetNoticeByNoticeID(ctx context.Context, noticeID int) (entity.Notice, error)
+	}
+
+	// File -.
+	File interface {
+		// UploadFile 上传文件
+		UploadFile(ctx context.Context, file *multipart.FileHeader) (*entity.File, error)
 	}
 )

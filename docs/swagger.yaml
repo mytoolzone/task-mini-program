@@ -18,6 +18,7 @@ definitions:
     - task_not_found
     - task_exist
     - bad_request
+    - not_image
     - audit_param_invalid
     - not_found
     - task_run_not_found
@@ -40,6 +41,7 @@ definitions:
     - ErrorTaskNotFound
     - ErrorTaskExist
     - ErrorBadRequest
+    - ErrorNotImage
     - ErrorAuditParamInValid
     - ErrorNotFound
     - ErrorTaskRunNotFound
@@ -323,6 +325,11 @@ definitions:
       userId:
         type: integer
     type: object
+  v1.doUploadFileResponse:
+    properties:
+      url:
+        type: string
+    type: object
 host: task.mytool.zone
 info:
   contact: {}
@@ -330,6 +337,40 @@ info:
   title: Task Mini Program
   version: "1.0"
 paths:
+  /file/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传文件
+      parameters:
+      - description: 文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/v1.doUploadFileResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 上传文件
+      tags:
+      - 文件
   /notice/detail:
     get:
       consumes:

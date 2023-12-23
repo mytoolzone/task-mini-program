@@ -1,10 +1,13 @@
 package http_util
 
 import (
+	"mime/multipart"
+	"net/http"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
-	"net/http"
 )
 
 type Response struct {
@@ -88,4 +91,40 @@ func SetUserName(ctx *gin.Context, userName string) {
 // GetUserName 从 ctx 中获取用户名
 func GetUserName(ctx *gin.Context) string {
 	return ctx.GetString(ctxUserName)
+}
+
+// IsImage 检测文件是否是图片
+func IsImage(file *multipart.FileHeader) bool {
+	// 获取文件后缀
+	tmpArr := strings.Split(file.Filename, ".")
+	ext := tmpArr[len(tmpArr)-1]
+	switch ext {
+	case "jpg":
+		return true
+	case "jpeg":
+		return true
+	case "png":
+		return true
+	case "gif":
+		return true
+	case "bmp":
+		return true
+	case "webp":
+		return true
+	}
+
+	switch file.Header.Get("Content-Type") {
+	case "image/jpeg":
+		return true
+	case "image/png":
+		return true
+	case "image/gif":
+		return true
+	case "image/bmp":
+		return true
+	case "image/webp":
+		return true
+	}
+
+	return false
 }

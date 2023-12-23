@@ -3,11 +3,12 @@ package app
 
 import (
 	"fmt"
-	"github.com/mytoolzone/task-mini-program/pkg/auth"
-	"github.com/mytoolzone/task-mini-program/pkg/wechat"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/mytoolzone/task-mini-program/pkg/auth"
+	"github.com/mytoolzone/task-mini-program/pkg/wechat"
 
 	"github.com/gin-gonic/gin"
 
@@ -35,11 +36,12 @@ func Run(cfg *config.Config) {
 	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg), wxApp)
 	noticeUseCase := usecase.NewNoticeUseCase(repo.NewNoticeRepo(pg))
 	taskUseCase := usecase.NewTaskUseCase(repo.NewTaskRepo(pg), repo.NewTaskRunRepo(pg), repo.NewTaskRunUserRepo(pg), repo.NewTaskRunLogRepo(pg), repo.NewUserTaskRepo(pg))
+	fileUseCase := usecase.NewFileUseCase(cfg.File.RootDir)
 	jwtAuth := auth.NewAuthJwt([]byte(cfg.JWT.Secret), cfg.App.Name)
 
 	// HTTP Server
 	handler := gin.New()
-	v1.NewRouter(handler, l, userUseCase, taskUseCase, noticeUseCase, jwtAuth)
+	v1.NewRouter(handler, l, userUseCase, taskUseCase, noticeUseCase, fileUseCase, jwtAuth)
 
 	fmt.Println("server - Run - httpServer.Port: " + cfg.HTTP.Port)
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))

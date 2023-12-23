@@ -2,9 +2,10 @@
 package v1
 
 import (
+	"net/http"
+
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/middleware"
 	"github.com/mytoolzone/task-mini-program/pkg/auth"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -24,13 +25,7 @@ import (
 // @version     1.0
 // @host        task.mytool.zone
 // @BasePath    /v1
-func NewRouter(handler *gin.Engine,
-	l logger.Interface,
-	u usecase.User,
-	tk usecase.Task,
-	n usecase.Notice,
-	auth auth.Auth,
-) {
+func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk usecase.Task, n usecase.Notice, fileUseCase *usecase.FileUseCase, auth auth.Auth) {
 	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
@@ -54,6 +49,7 @@ func NewRouter(handler *gin.Engine,
 		newTaskRoutes(hl, jwt, checkRole, tk, n)
 		newUserRoutes(hl, jwt, checkRole, auth, u)
 		newNoticeRoutes(hl, jwt, checkRole, n)
+		newFileRoutes(hl, jwt, checkRole, fileUseCase)
 	}
 
 	// Static files

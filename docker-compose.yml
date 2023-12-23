@@ -25,11 +25,10 @@ services:
     container_name: server
     image: app
     command: [ "/app", "server" ]
+    volumes:
+      - ./public:/app/public
     env_file:
       - .env
-#    environment:
-#      PG_URL: 'postgres://user:pass@postgres:5432/postgres'
-#      RMQ_URL: 'amqp://guest:guest@rabbitmq:5672/'
     ports:
       - 8080:8080
     depends_on:
