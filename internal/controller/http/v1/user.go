@@ -229,7 +229,12 @@ func (ur userRoutes) updateSetting(c *gin.Context) {
 		http_util.Error(c, app_code.WithError(app_code.ErrorUpdateUserSetting, err))
 		return
 	}
-	http_util.Success(c, nil)
+	setting, err := ur.u.GetSettingByUserID(c.Request.Context(), userID)
+	if err != nil {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, err))
+		return
+	}
+	http_util.Success(c, setting)
 }
 
 // @Summary 获取用户设置
