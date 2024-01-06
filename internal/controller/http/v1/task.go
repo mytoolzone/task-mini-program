@@ -61,6 +61,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/userJoinTask", ur.userJoinTask)
 		// 获取某个用户的统计数据
 		h.GET("/userSummary", ur.userSummary)
+		h.GET("/executorList", ur.executorList)
 	}
 }
 
@@ -725,4 +726,20 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	}
 
 	http_util.Success(ctx, summary)
+}
+
+func (r taskRoutes) executorList(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, entity.UserTaskStatusAuditPass)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, userTasks)
 }
