@@ -22,9 +22,9 @@ require (
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
 	github.com/swaggo/swag v1.16.2
-	gorm.io/driver/postgres v1.4.5
+	gorm.io/driver/postgres v1.5.4
 	gorm.io/gen v0.3.23
-	gorm.io/gorm v1.25.1-0.20230505075827-e61b98d69677
+	gorm.io/gorm v1.25.5
 )
 
 require (
@@ -65,6 +65,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgtype v1.12.0 // indirect
+	github.com/jackc/pgx/v5 v5.4.3 // indirect
 	github.com/jackc/puddle v1.3.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
