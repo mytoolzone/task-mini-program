@@ -1,2 +1,4 @@
 28
 cat /tmp/task-mini-program20240114-232901/Dockerfile | sed "s/app:[[:space:]]*\([0-9]\+\(\.[0-9]\+\)\{1,2\}\)/xytschool\/task-mini-program:0.0.19/g" > /tmp/task-mini-program20240114-232901/Dockerfile-20240114232914
+
+ cat /tmp/task-mini-program20240114-233524/docker-compose.yml | sed "s/app:[[:space:]]*\([0-9]\+\(\.[0-9]\+\)\{1,2\}\)/xytschool\/task-mini-program:0.0.19/g" > /tmp/task-mini-program20240114-233524/docker-compose.yml-20240114233537
