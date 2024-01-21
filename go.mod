@@ -3,7 +3,6 @@ module github.com/mytoolzone/task-mini-program
 go 1.20
 
 require (
-	github.com/Conight/go-googletrans v0.0.0-20200929083318-176776d061cb
 	github.com/Eun/go-hit v0.5.23
 	github.com/gin-gonic/gin v1.7.7
 	github.com/golang-jwt/jwt v3.2.2+incompatible
