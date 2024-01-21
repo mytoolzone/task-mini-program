@@ -38,6 +38,10 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/applyUsers", ur.applyUserList)
 		// 审核报名
 		h.POST("/auditApplyTask", ur.auditApplyTask)
+		// 获取任务参加人列表获取某个任务，已经审核通过的人列表用在分配角色环节
+		h.GET("/approvedUsers", ur.approvedUsers)
+		// 获取当前访问用户的角色
+		h.GET("/currentUserRole", ur.currentUserRole)
 		// 获取签到二维码
 		h.GET("/prepare", ur.prepare)
 		// 签到
@@ -62,8 +66,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/userJoinTask", ur.userJoinTask)
 		// 获取某个用户的统计数据
 		h.GET("/userSummary", ur.userSummary)
-		// 获取任务参加人列表获取某个任务，已经审核通过的人列表用在分配角色环节
-		h.GET("/approvedUsers", ur.approvedUsers)
+
 	}
 }
 
@@ -730,8 +733,38 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	http_util.Success(ctx, summary)
 }
 
+// @Summary     currentUserRole
+// @Description 获取当前访问用户在某个任务的角色
+// @ID          currentUserRole
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/currentUserRole [get]
+func (r taskRoutes) currentUserRole(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userID := http_util.GetUserID(ctx)
+
+	userTask, err := r.task.GetUserTaskRole(ctx.Request.Context(), taskID, userID)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, userTask)
+}
+
 // @Summary     approvedUsers list
-// @Description 获取任务参加人列表获取某个任务，已经审核通过的人列表,该接口用在分配角色环节
+// @Description 获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）
 // @ID          approvedUsers-list
 // @Tags  	    task
 // @Accept      json

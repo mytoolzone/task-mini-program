@@ -63,11 +63,13 @@ type (
 		// GetTaskDetail 获取任务详情
 		GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error)
 		// GetByUserID 获取一个人参与的任务
-		GetByUserID(ctx context.Context, userID int, status string, id int) ([]entity.Task, error)
+		GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error)
 		// GetByTaskID 获取一个任务的详情
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		// GetTaskList 任务大厅获取任务列表
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
+		// GetUserTaskRole 获取一个人在某个任务的角色
+		GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetUserTasks 获取任务参与者列表
 		GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetTaskRunList 获取某个任务的子任务列表

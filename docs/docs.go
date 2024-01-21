@@ -248,7 +248,7 @@ const docTemplate = `{
         },
         "/task/approvedUsers": {
             "get": {
-                "description": "获取任务参加人列表获取某个任务，已经审核通过的人列表,该接口用在分配角色环节",
+                "description": "获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）",
                 "consumes": [
                     "application/json"
                 ],
@@ -608,6 +608,70 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/entity.Task"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/currentUserRole": {
+            "get": {
+                "description": "获取当前访问用户在某个任务的角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "currentUserRole",
+                "operationId": "currentUserRole",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taskID",
+                        "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.UserTask"
                                         }
                                     }
                                 }
