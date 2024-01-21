@@ -1,14 +1,15 @@
 package v1
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
-	"strconv"
-	"strings"
 )
 
 type taskRoutes struct {
@@ -53,7 +54,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.POST("/uploadRunLog", ur.uploadRunLog)
 		// 获取任务运行日志列表
 		h.GET("/runLogs", ur.runLogList)
-		// 获取任务用户列表
+		// 获取任务用户列表 全任务周期
 		h.GET("/users", ur.userList)
 		// 获取某人创建的任务列表
 		h.GET("/userTasks", ur.userTaskList)
@@ -61,7 +62,8 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/userJoinTask", ur.userJoinTask)
 		// 获取某个用户的统计数据
 		h.GET("/userSummary", ur.userSummary)
-		h.GET("/executorList", ur.executorList)
+		// 获取任务参加人列表获取某个任务，已经审核通过的人列表用在分配角色环节
+		h.GET("/approvedUsers", ur.approvedUsers)
 	}
 }
 
@@ -728,7 +730,19 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	http_util.Success(ctx, summary)
 }
 
-func (r taskRoutes) executorList(ctx *gin.Context) {
+// @Summary     approvedUsers list
+// @Description 获取任务参加人列表获取某个任务，已经审核通过的人列表,该接口用在分配角色环节
+// @ID          approvedUsers-list
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=[]entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/approvedUsers [get]
+func (r taskRoutes) approvedUsers(ctx *gin.Context) {
 	taskIDStr, _ := ctx.GetQuery("taskID")
 	taskID, _ := strconv.Atoi(taskIDStr)
 	if taskID <= 0 {
