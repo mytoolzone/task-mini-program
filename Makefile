@@ -4,7 +4,7 @@ export
 LOCAL_BIN:=$(CURDIR)/bin
 PATH:=$(LOCAL_BIN):$(PATH)
 DOCKER_IMAGE_NAME:=xytschool/task-mini-program
-DOCKER_IMAGE_TAG:=0.1.2
+DOCKER_IMAGE_TAG:=0.1.4
 
 # HELP =================================================================================================================
 # This will output the help for each task
@@ -26,7 +26,8 @@ docker-push: ### Push docker image
 	docker push $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)
 .PHONY: docker-push
 
-docker: docker-build docker-push
+docker: docker-build
+#docker: docker-build docker-push
 
 compose-up-integration-test: ### Run docker-compose with integration test
 	docker-compose up --build --abort-on-container-exit --exit-code-from integration

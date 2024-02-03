@@ -53,7 +53,7 @@ func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk useca
 	}
 
 	// Static files
-	//handler.StaticFS("/public", http.Dir("public"))
+	handler.StaticFS("/public", http.Dir("public"))
 	//handler.StaticFS("/.well-known", http.Dir("public/.well-known"))
 
 }

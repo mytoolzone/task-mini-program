@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
@@ -37,7 +38,6 @@ type doMiniProgramLoginResponse struct {
 	Token    string `json:"token"`
 	UserID   int    `json:"userId"`
 	Username string `json:"username"`
-	Phone    string `json:"phone"`
 	Role     string `json:"role"`
 }
 
@@ -81,7 +81,6 @@ func (ur userRoutes) miniProgramLogin(context *gin.Context) {
 		Token:    token,
 		UserID:   user.ID,
 		Username: user.Username,
-		Phone:    user.Phone,
 		Role:     role,
 	})
 }

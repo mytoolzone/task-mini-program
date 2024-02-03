@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
@@ -21,7 +22,7 @@ func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (enti
 		TaskID: taskID,
 		UserID: userID,
 		Status: entity.UserTaskStatusApply,
-		Role:   entity.UserTaskRoleNone,
+		Role:   entity.UserRoleMember,
 	}
 	if err := t.Db.WithContext(ctx).Create(&UserTask).Error; err != nil {
 		return entity.UserTask{}, err
