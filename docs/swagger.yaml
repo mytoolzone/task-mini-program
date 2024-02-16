@@ -179,8 +179,6 @@ definitions:
         type: string
       mingzu:
         type: string
-      name:
-        type: string
       phone:
         type: string
       region:
@@ -188,6 +186,8 @@ definitions:
       sex:
         type: string
       user_id:
+        type: string
+      username:
         type: string
       wechat_name:
         type: string
@@ -295,8 +295,6 @@ definitions:
     type: object
   v1.doMiniProgramLoginResponse:
     properties:
-      phone:
-        type: string
       role:
         type: string
       token:
@@ -1311,6 +1309,45 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: 获取用户设置
+      tags:
+      - 用户
+  /user/getSettingByUserID:
+    get:
+      consumes:
+      - application/json
+      description: 通过userID获取用户设置
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserSetting'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 通过userID获取用户设置
       tags:
       - 用户
   /user/login:

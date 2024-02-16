@@ -1527,6 +1527,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/getSettingByUserID": {
+            "get": {
+                "description": "通过userID获取用户设置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "通过userID获取用户设置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.UserSetting"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/login": {
             "post": {
                 "description": "登录",
@@ -2007,9 +2070,6 @@ const docTemplate = `{
                 "mingzu": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "phone": {
                     "type": "string"
                 },
@@ -2020,6 +2080,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 },
                 "wechat_name": {
@@ -2186,9 +2249,6 @@ const docTemplate = `{
         "v1.doMiniProgramLoginResponse": {
             "type": "object",
             "properties": {
-                "phone": {
-                    "type": "string"
-                },
                 "role": {
                     "type": "string"
                 },

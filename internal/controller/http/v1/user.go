@@ -2,6 +2,8 @@ package v1
 
 import (
 	"encoding/json"
+	"errors"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
@@ -27,6 +29,7 @@ func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, roleH gin.Ha
 		h.POST("/register", ur.register)
 		h.POST("/updateSetting", authH, ur.updateSetting)
 		h.GET("/getSetting", authH, ur.getSetting)
+		h.GET("/getSettingByUserID", authH, ur.getSettingByUserID)
 	}
 }
 
@@ -248,6 +251,32 @@ func (ur userRoutes) updateSetting(c *gin.Context) {
 // @Router /user/getSetting [get]
 func (ur userRoutes) getSetting(c *gin.Context) {
 	userID := http_util.GetUserID(c)
+	setting, err := ur.u.GetSettingByUserID(c.Request.Context(), userID)
+	if err != nil {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, err))
+		return
+	}
+	http_util.Success(c, setting)
+}
+
+// @Summary 通过userID获取用户设置
+// @Description 通过userID获取用户设置
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "jwt_token"
+// @Param userID query int true "userID"
+// @Success 200 {object} http_util.Response{data=entity.UserSetting}
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /user/getSettingByUserID [get]
+func (ur userRoutes) getSettingByUserID(c *gin.Context) {
+	userIDStr := c.Request.URL.Query().Get("userID")
+	if userIDStr == "" {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, errors.New("userID不能为空")))
+		return
+	}
+	userID, _ := strconv.Atoi(userIDStr)
 	setting, err := ur.u.GetSettingByUserID(c.Request.Context(), userID)
 	if err != nil {
 		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, err))
