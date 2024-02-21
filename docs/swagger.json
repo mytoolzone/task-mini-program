@@ -1905,6 +1905,9 @@
                 "location": {
                     "type": "string"
                 },
+                "max_user_count": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
