@@ -23,7 +23,7 @@ services:
   app:
     build: .
     container_name: server
-    image: app
+    image: app:0.0.1
     command: [ "/app", "server" ]
     volumes:
       - ./public:/app/public
