@@ -22,7 +22,7 @@ package entity
 type UserSetting struct {
 	UserID                string `json:"user_id"`
 	IntroUserID           string `json:"intro_user_id"`
-	Name                  string `json:"name"`
+	Name                  string `json:"username"`
 	LoginName             string `json:"login_name"`
 	Sex                   string `json:"sex"`
 	Phone                 string `json:"phone"`

@@ -2,9 +2,11 @@ package repo
 
 import (
 	"context"
+
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
+	"gorm.io/gorm"
 )
 
 type UserTaskRepo struct {
@@ -21,7 +23,7 @@ func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (enti
 		TaskID: taskID,
 		UserID: userID,
 		Status: entity.UserTaskStatusApply,
-		Role:   entity.UserTaskRoleNone,
+		Role:   entity.UserRoleMember,
 	}
 	if err := t.Db.WithContext(ctx).Create(&UserTask).Error; err != nil {
 		return entity.UserTask{}, err
@@ -52,15 +54,18 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 		return app_code.New(app_code.ErrorAuditParamInValid, "role invalid")
 	}
 
-	var UserTask entity.UserTask = entity.UserTask{
-		TaskID: taskID,
-		UserID: userID,
-		Role:   role,
-	}
-
-	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Updates(&UserTask).Error; err != nil {
+	var userTask = entity.UserTask{}
+	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&userTask).Error; err != nil && err != gorm.ErrRecordNotFound {
 		return err
 	}
+	userTask.Role = role
+	userTask.TaskID = taskID
+	userTask.UserID = userID
+
+	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Save(userTask).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -82,7 +87,7 @@ func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID in
 }
 
 // GetUserJoinTaskList 获取某个人参与的任务列表
-func (t *UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+func (t UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
 	var tasks []entity.UserTask
 	query := t.Db.WithContext(ctx).Where("user_id = ?", userID)
 	if lastID > 0 {

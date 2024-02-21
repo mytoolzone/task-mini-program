@@ -23,3 +23,5 @@ bin/
 vendor/
 
 config/config.pord.yml
+.scannerwork
+public/upload

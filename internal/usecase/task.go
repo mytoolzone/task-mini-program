@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -49,6 +50,10 @@ func (t TaskUseCase) GetTaskList(ctx context.Context, lastID int, keyword, statu
 
 func (t TaskUseCase) GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
 	return t.tu.GetTaskUserList(ctx, taskID, status)
+}
+
+func (t TaskUseCase) GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
+	return t.tu.GetUserTaskByUserID(ctx, taskID, userID)
 }
 
 func (t TaskUseCase) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error) {
