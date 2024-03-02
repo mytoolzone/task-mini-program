@@ -1187,6 +1187,46 @@ paths:
       summary: User task list
       tags:
       - task
+  /task/userTask:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前访问用户在某个任务的详情
+      operationId: userTask
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserTask'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: userTask
+      tags:
+      - task
   /task/userTasks:
     get:
       consumes:

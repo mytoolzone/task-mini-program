@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -83,6 +84,10 @@ func (t UserTaskRepo) GetTaskUserList(ctx context.Context, taskID int, status st
 func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
 	var UserTask entity.UserTask
 	err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&UserTask).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		UserTask.Status = entity.UserTaskStatusNotApply
+		return entity.UserTask{}, gorm.ErrRecordNotFound
+	}
 	return UserTask, err
 }
 

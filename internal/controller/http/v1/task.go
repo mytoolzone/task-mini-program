@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"strconv"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
+	"gorm.io/gorm"
 )
 
 type taskRoutes struct {
@@ -42,6 +44,8 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/approvedUsers", ur.approvedUsers)
 		// 获取当前访问用户的角色
 		h.GET("/currentUserRole", ur.currentUserRole)
+		// 获取当前用户在任务的详情
+		h.GET("/userTask", ur.userTask)
 		// 获取签到二维码
 		h.GET("/prepare", ur.prepare)
 		// 签到
@@ -576,7 +580,7 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 
 	status := ctx.Query("status")
 
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, status)
+	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, status)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -605,7 +609,7 @@ func (r taskRoutes) applyUserList(ctx *gin.Context) {
 		return
 	}
 
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, entity.UserTaskStatusApply)
+	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, entity.UserTaskStatusApply)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -763,6 +767,41 @@ func (r taskRoutes) currentUserRole(ctx *gin.Context) {
 	http_util.Success(ctx, userTask)
 }
 
+// userTask
+// @Summary     userTask
+// @Description 获取当前访问用户在某个任务的详情
+// @ID          userTask
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/userTask [get]
+func (r taskRoutes) userTask(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userID := http_util.GetUserID(ctx)
+
+	userTask, err := r.task.GetUserTaskRole(ctx.Request.Context(), taskID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http_util.Success(ctx, userTask)
+			return
+		}
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, userTask)
+}
+
 // @Summary     approvedUsers list
 // @Description 获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）
 // @ID          approvedUsers-list
@@ -783,7 +822,7 @@ func (r taskRoutes) approvedUsers(ctx *gin.Context) {
 		return
 	}
 
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, entity.UserTaskStatusAuditPass)
+	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, entity.UserTaskStatusAuditPass)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

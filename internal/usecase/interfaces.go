@@ -71,7 +71,7 @@ type (
 		// GetUserTaskRole 获取一个人在某个任务的角色
 		GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetUserTasks 获取任务参与者列表
-		GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
+		GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetTaskRunList 获取某个任务的子任务列表
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
 		// GetTaskRunLogList 获取某个任务的记录员上传的任务记录

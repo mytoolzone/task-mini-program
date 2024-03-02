@@ -23,6 +23,7 @@ const (
 // 用户报名任务审核状态
 const (
 	UserTaskStatusApply     = "apply"
+	UserTaskStatusNotApply  = "notApply"
 	UserTaskStatusAuditFail = StatusAuditReject
 	UserTaskStatusAuditPass = StatusAuditApproved
 )
