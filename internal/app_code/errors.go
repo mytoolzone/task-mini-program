@@ -16,6 +16,7 @@ const (
 	ErrorUpdateUserSetting CodeType = "update_user_setting"
 	ErrorGetUserSetting    CodeType = "get_user_setting"
 	ErrorTaskNotFound      CodeType = "task_not_found"
+	ErrorUserTaskNotFound           = "user_task_not_found"
 	ErrorTaskExist         CodeType = "task_exist"
 	ErrorBadRequest        CodeType = "bad_request"
 	ErrorNotImage          CodeType = "not_image"

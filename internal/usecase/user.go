@@ -19,14 +19,16 @@ func md5V(str string) string {
 }
 
 type UserUseCase struct {
-	repo  UserRepo
-	wxApp wechat.WxApp
+	repo          UserRepo
+	insuranceRepo InsuranceRepo
+	wxApp         wechat.WxApp
 }
 
-func NewUserUseCase(r UserRepo, wxApp wechat.WxApp) *UserUseCase {
+func NewUserUseCase(r UserRepo, insuranceRepo InsuranceRepo, wxApp wechat.WxApp) *UserUseCase {
 	return &UserUseCase{
-		repo:  r,
-		wxApp: wxApp,
+		repo:          r,
+		wxApp:         wxApp,
+		insuranceRepo: insuranceRepo,
 	}
 }
 
@@ -103,6 +105,12 @@ func (u UserUseCase) GetSettingByUserID(ctx context.Context, userID int) (entity
 		return entity.UserSetting{}, nil
 	}
 
+	insurances, err := u.GetUserInsurance(ctx, userID)
+	if err != nil {
+		return entity.UserSetting{}, err
+	}
+
+	setting.Insurances = insurances
 	if err != nil {
 		return entity.UserSetting{}, err
 	}
@@ -122,4 +130,12 @@ func (u UserUseCase) SetUserRole(ctx context.Context, userID int, role string) e
 // FindUsersByName 查询用户
 func (u UserUseCase) FindUsersByName(ctx context.Context, username string) ([]entity.User, error) {
 	return u.repo.FindUsersByName(ctx, username)
+}
+
+func (u UserUseCase) AddUserInsurance(ctx context.Context, insurance entity.Insurance) error {
+	return u.insuranceRepo.AddInsurance(ctx, insurance)
+}
+
+func (u UserUseCase) GetUserInsurance(ctx context.Context, userID int) ([]entity.Insurance, error) {
+	return u.insuranceRepo.GetInsuranceByUserID(ctx, userID)
 }
