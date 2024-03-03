@@ -148,7 +148,7 @@ type (
 		AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error)
 		// AssignRole 分配用户在任务中角色
 		AssignRole(ctx context.Context, taskID, userID int, role string) error
-		// GetUserTaskList 获取任务参与者列表
+		// GetTaskUserList 获取任务参与者列表
 		GetTaskUserList(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetUserTaskByUserID 获取任务参与者状态
 		GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error)
