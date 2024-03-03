@@ -30,6 +30,8 @@ func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, roleH gin.Ha
 		h.POST("/updateSetting", authH, ur.updateSetting)
 		h.GET("/getSetting", authH, ur.getSetting)
 		h.GET("/getSettingByUserID", authH, ur.getSettingByUserID)
+		h.GET("/findUsers", authH, ur.findUsers)
+		h.POST("/setUserRole", authH, ur.setUserRole)
 	}
 }
 
@@ -283,4 +285,79 @@ func (ur userRoutes) getSettingByUserID(c *gin.Context) {
 		return
 	}
 	http_util.Success(c, setting)
+}
+
+// @Summary 管理员设置用户的角色
+// @Description 管理员通过userID设置用户角色
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "jwt_token"
+// @Param userID query int true "userID"
+// @Param role query string true "role" Enums(captain, member, task_deployer, task_user_auditor, admin)
+// @Success 200 {object} http_util.Response
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /user/setUserRole [post]
+func (ur userRoutes) setUserRole(c *gin.Context) {
+	loginUserID := http_util.GetUserID(c)
+	roleModel, err := ur.u.GetUserRole(c.Request.Context(), loginUserID)
+	if err != nil {
+		glog.WithErr(err).Error("获取用户角色失败")
+		http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, err))
+		return
+	}
+
+	if roleModel.Role != entity.UserRoleAdmin {
+		glog.WithErr(err).Errorf("[%v] 用户没有权限设置用户角色", loginUserID)
+		http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, err))
+		return
+	}
+
+	userIDStr := c.Request.URL.Query().Get("userID")
+	if userIDStr == "" {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, errors.New("userID不能为空")))
+		return
+	}
+
+	role := c.Request.URL.Query().Get("role")
+	if userIDStr == "" {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, errors.New("userID不能为空")))
+		return
+	}
+
+	if !entity.IsValidRole(role) {
+		http_util.Error(c, app_code.WithError(app_code.ErrorBadRequest, errors.New("role参数错误")))
+		return
+	}
+
+	userID, _ := strconv.Atoi(userIDStr)
+	err = ur.u.SetUserRole(c.Request.Context(), userID, role)
+	if err != nil {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserSetting, err))
+		return
+	}
+
+	http_util.Success(c, nil)
+}
+
+// @Summary 查询用户列表
+// @Description 查询用户列表
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "jwt_token"
+// @Param username query string false "username"
+// @Success 200 {object} http_util.Response{data=[]entity.User}
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /user/findUsers [get]
+func (ur userRoutes) findUsers(c *gin.Context) {
+	username := c.Request.URL.Query().Get("username")
+	users, err := ur.u.FindUsersByName(c.Request.Context(), username)
+	if err != nil {
+		http_util.Error(c, app_code.WithError(app_code.ErrorGetUserList, err))
+		return
+	}
+	http_util.Success(c, users)
 }

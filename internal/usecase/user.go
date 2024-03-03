@@ -113,3 +113,13 @@ func (u UserUseCase) GetSettingByUserID(ctx context.Context, userID int) (entity
 func (u UserUseCase) GetUserRole(ctx context.Context, userID int) (entity.UserRole, error) {
 	return u.repo.GetUserRole(ctx, userID)
 }
+
+// SetUserRole 设置用户角色
+func (u UserUseCase) SetUserRole(ctx context.Context, userID int, role string) error {
+	return u.repo.SetUserRole(ctx, userID, role)
+}
+
+// FindUsersByName 查询用户
+func (u UserUseCase) FindUsersByName(ctx context.Context, username string) ([]entity.User, error) {
+	return u.repo.FindUsersByName(ctx, username)
+}

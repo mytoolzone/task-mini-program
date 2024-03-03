@@ -1,5 +1,18 @@
 package entity
 
+// 用户角色 管理员 一般用户
+const (
+	UserRoleAdmin           = "admin"
+	UserRoleMember          = "member"
+	UserRoleCaptain         = "captain"
+	UserRoleTaskDeployer    = "task_deployer"
+	UserRoleTaskUserAuditor = "task_user_auditor"
+)
+
+func IsValidRole(role string) bool {
+	return role == UserRoleAdmin || role == UserRoleMember || role == UserRoleCaptain || role == UserRoleTaskDeployer || role == UserRoleTaskUserAuditor
+}
+
 // 定义任务的执行状态
 // 任务的执行状态有：新任务(发布待审核)、审核失败、报名(审核通过待报名), 待运行(报名结束等待运行), 运行、暂停、完成、取消
 const (
@@ -20,23 +33,17 @@ const (
 	UserStatusFrozen = "frozen"
 )
 
+const (
+	StatusAuditReject   = "rejected"
+	StatusAuditApproved = "approved"
+)
+
 // 用户报名任务审核状态
 const (
 	UserTaskStatusApply     = "apply"
 	UserTaskStatusNotApply  = "notApply"
 	UserTaskStatusAuditFail = StatusAuditReject
 	UserTaskStatusAuditPass = StatusAuditApproved
-)
-
-const (
-	StatusAuditReject   = "rejected"
-	StatusAuditApproved = "approved"
-)
-
-// 用户角色 管理员 一般用户
-const (
-	UserRoleAdmin  = "admin"
-	UserRoleMember = "member"
 )
 
 // 用户报名在任务中角色 队长 队员 记录员 其他

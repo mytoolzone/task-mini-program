@@ -3,6 +3,7 @@ package app_code
 const (
 	Success                CodeType = "success"
 	ErrorUserNotFound      CodeType = "user_not_found"
+	ErrorGetUserList       CodeType = "find_user_list"
 	ErrorUserPassword      CodeType = "password_error"
 	ErrorServerError       CodeType = "service_error"
 	ErrorAuthFailed        CodeType = "auth_failed"
