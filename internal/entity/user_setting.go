@@ -29,7 +29,7 @@ type UserSetting struct {
 	Birthday              string `json:"birthday"`
 	WechatName            string `json:"wechat_name"`
 	Married               string `json:"married"`
-	Idcard                string `json:"idcard"`
+	IDCard                string `json:"idcard"`
 	Education             string `json:"education"`
 	Email                 string `json:"email"`
 	Mingzu                string `json:"mingzu"`
