@@ -48,6 +48,21 @@ definitions:
     - ErrorNotFound
     - ErrorTaskRunNotFound
     - ErrorCreateTask
+  entity.Insurance:
+    properties:
+      created_at:
+        type: string
+      end_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      start_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
   entity.Notice:
     properties:
       content:
@@ -173,6 +188,10 @@ definitions:
         type: string
       insurance_start:
         type: string
+      insurances:
+        items:
+          $ref: '#/definitions/entity.Insurance'
+        type: array
       intro:
         type: string
       intro_user_id:
@@ -1321,6 +1340,47 @@ paths:
       summary: Apply Task User list
       tags:
       - task
+  /user/addUserInsurance:
+    post:
+      consumes:
+      - application/json
+      description: 添加用户保险
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: json
+        in: body
+        name: param
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Insurance'
+      - description: insurance
+        in: body
+        name: insurance
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Insurance'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 添加用户保险
+      tags:
+      - 用户
   /user/findUsers:
     get:
       consumes:

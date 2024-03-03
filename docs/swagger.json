@@ -1528,6 +1528,68 @@
                 }
             }
         },
+        "/user/addUserInsurance": {
+            "post": {
+                "description": "添加用户保险",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "添加用户保险",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "json",
+                        "name": "param",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Insurance"
+                        }
+                    },
+                    {
+                        "description": "insurance",
+                        "name": "insurance",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Insurance"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/findUsers": {
             "get": {
                 "description": "查询用户列表",
@@ -2057,6 +2119,29 @@
                 "ErrorCreateTask"
             ]
         },
+        "entity.Insurance": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "end_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "entity.Notice": {
             "type": "object",
             "properties": {
@@ -2246,6 +2331,12 @@
                 },
                 "insurance_start": {
                     "type": "string"
+                },
+                "insurances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Insurance"
+                    }
                 },
                 "intro": {
                     "type": "string"

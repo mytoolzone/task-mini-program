@@ -32,6 +32,7 @@ func newUserRoutes(handler *gin.RouterGroup, authH gin.HandlerFunc, roleH gin.Ha
 		h.GET("/getSettingByUserID", authH, ur.getSettingByUserID)
 		h.GET("/findUsers", authH, ur.findUsers)
 		h.POST("/setUserRole", authH, ur.setUserRole)
+		h.POST("/addUserInsurance", authH, ur.addUserInsurance)
 	}
 }
 
@@ -309,8 +310,8 @@ func (ur userRoutes) setUserRole(c *gin.Context) {
 	}
 
 	if roleModel.Role != entity.UserRoleAdmin {
-		glog.WithErr(err).Errorf("[%v] 用户没有权限设置用户角色", loginUserID)
-		http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, err))
+		glog.Errorf("[%v] 用户没有权限设置用户角色", loginUserID)
+		http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, errors.New("用户没有权限设置用户角色")))
 		return
 	}
 
@@ -360,4 +361,48 @@ func (ur userRoutes) findUsers(c *gin.Context) {
 		return
 	}
 	http_util.Success(c, users)
+}
+
+// @Summary 添加用户保险
+// @Description 添加用户保险
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "jwt_token"
+// @Param param         body entity.Insurance true "json"
+// @Param insurance     body entity.Insurance true "insurance"
+// @Success 200 {object} http_util.Response
+// @Failure 400 {object} http_util.Response
+// @Failure 500 {object} http_util.Response
+// @Router /user/addUserInsurance [post]
+func (ur userRoutes) addUserInsurance(c *gin.Context) {
+	//loginUserID := http_util.GetUserID(c)
+	//roleModel, err := ur.u.GetUserRole(c.Request.Context(), loginUserID)
+	//if err != nil {
+	//	glog.WithErr(err).Error("获取用户角色失败")
+	//	http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, err))
+	//	return
+	//}
+	//
+	//if roleModel.Role != entity.UserRoleAdmin {
+	//	glog.Errorf("[userID:%v] 用户没有权限添加保险", loginUserID)
+	//	http_util.Error(c, app_code.WithError(app_code.ErrorForbidden, errors.New("用户没有权限设置添加保险")))
+	//	return
+	//}
+
+	var insurance entity.Insurance
+
+	if err := c.ShouldBindJSON(&insurance); err != nil {
+		glog.WithErr(err).Error("绑定 Insurance json失败")
+		http_util.Error(c, app_code.WithError(app_code.ErrorBadRequest, err))
+		return
+	}
+
+	if err := ur.u.AddUserInsurance(c.Request.Context(), insurance); err != nil {
+		glog.WithErr(err).Error("添加用户保险失败")
+		http_util.Error(c, app_code.WithError(app_code.ErrorServerError, err))
+		return
+	}
+
+	http_util.Success(c, nil)
 }

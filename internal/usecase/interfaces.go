@@ -23,6 +23,12 @@ type (
 		SetUserRole(ctx context.Context, id int, role string) error
 		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
 	}
+
+	// InsuranceRepo -.
+	InsuranceRepo interface {
+		AddInsurance(ctx context.Context, insurance entity.Insurance) error
+		GetInsuranceByUserID(ctx context.Context, userID int) ([]entity.Insurance, error)
+	}
 )
 
 type (
@@ -36,6 +42,8 @@ type (
 		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
 		SetUserRole(ctx context.Context, id int, role string) error
 		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
+		AddUserInsurance(ctx context.Context, insurance entity.Insurance) error
+		GetUserInsurance(ctx context.Context, userID int) ([]entity.Insurance, error)
 	}
 
 	// Task -.
@@ -77,7 +85,7 @@ type (
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 		// GetUserTaskRole 获取一个人在某个任务的角色
 		GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error)
-		// GetUserTasks 获取任务参与者列表
+		// GetTaskUsers 获取任务参与者列表
 		GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetTaskRunList 获取某个任务的子任务列表
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
