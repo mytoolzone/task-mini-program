@@ -63,6 +63,8 @@ func (u *UserRepo) UpdateUserSetting(ctx context.Context, userID int, setting en
 		return err
 	}
 	user.Ext = string(data)
+	user.Username = setting.Name
+	user.Email = setting.Email
 
 	if err := u.Db.WithContext(ctx).Where("id = ?", userID).Updates(&user).Error; err != nil {
 		return err
