@@ -4,6 +4,7 @@ definitions:
     enum:
     - success
     - user_not_found
+    - find_user_list
     - password_error
     - service_error
     - auth_failed
@@ -27,6 +28,7 @@ definitions:
     x-enum-varnames:
     - Success
     - ErrorUserNotFound
+    - ErrorGetUserList
     - ErrorUserPassword
     - ErrorServerError
     - ErrorAuthFailed
@@ -1319,6 +1321,46 @@ paths:
       summary: Apply Task User list
       tags:
       - task
+  /user/findUsers:
+    get:
+      consumes:
+      - application/json
+      description: 查询用户列表
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.User'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 查询用户列表
+      tags:
+      - 用户
   /user/getSetting:
     get:
       consumes:
@@ -1495,6 +1537,51 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: 注册
+      tags:
+      - 用户
+  /user/setUserRole:
+    post:
+      consumes:
+      - application/json
+      description: 管理员通过userID设置用户角色
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      - description: role
+        enum:
+        - captain
+        - member
+        - task_deployer
+        - task_user_auditor
+        - admin
+        in: query
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 管理员设置用户的角色
       tags:
       - 用户
   /user/updateSetting:

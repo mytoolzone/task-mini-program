@@ -9,17 +9,8 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package=usecase_test
 
+// repos
 type (
-	// User -.
-	User interface {
-		Login(ctx context.Context, username, password string) (entity.User, error)
-		Register(context.Context, entity.User) (entity.User, error)
-		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
-		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
-		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
-		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
-	}
-
 	// UserRepo -.
 	UserRepo interface {
 		Store(context.Context, *entity.User) error
@@ -29,6 +20,22 @@ type (
 		GetByUserName(ctx context.Context, username string) (entity.User, error)
 		GetByOpenId(ctx context.Context, id string) (user entity.User, exist bool, err error)
 		GetUserRole(ctx context.Context, id int) (entity.UserRole, error)
+		SetUserRole(ctx context.Context, id int, role string) error
+		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
+	}
+)
+
+type (
+	// User -.
+	User interface {
+		Login(ctx context.Context, username, password string) (entity.User, error)
+		Register(context.Context, entity.User) (entity.User, error)
+		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
+		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
+		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
+		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
+		SetUserRole(ctx context.Context, id int, role string) error
+		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
 	}
 
 	// Task -.
