@@ -31,6 +31,8 @@ type Task struct {
 	Location     string         `gorm:"column:location" json:"location"`
 	MaxUserCount int            `gorm:"column:max_user_count" json:"max_user_count"`
 	Status       string         `gorm:"column:status" json:"status"`
+	Leader       int            `gorm:"column:leader" json:"leader"`
+	Recorder     int            `gorm:"column:recorder" json:"recorder"`
 }
 
 // TableName Task's table name
