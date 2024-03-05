@@ -90,12 +90,16 @@ definitions:
         type: string
       id:
         type: integer
+      leader:
+        type: integer
       location:
         type: string
       max_user_count:
         type: integer
       name:
         type: string
+      recorder:
+        type: integer
       require:
         type: string
       status:

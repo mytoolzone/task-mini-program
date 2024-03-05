@@ -2183,6 +2183,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "leader": {
+                    "type": "integer"
+                },
                 "location": {
                     "type": "string"
                 },
@@ -2191,6 +2194,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "recorder": {
+                    "type": "integer"
                 },
                 "require": {
                     "type": "string"
