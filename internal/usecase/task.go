@@ -49,7 +49,39 @@ func (t TaskUseCase) GetTaskList(ctx context.Context, lastID int, keyword, statu
 }
 
 func (t TaskUseCase) GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
-	return t.tu.GetTaskUserList(ctx, taskID, status)
+	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, status)
+	if err != nil {
+		return nil, err
+	}
+	return taskUserList, err
+}
+
+func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, entity.UserTaskStatusAuditPass)
+	if err != nil {
+		return nil, err
+	}
+
+	tr, err := t.tr.GetTaskLatestRun(ctx, taskID)
+	if err != nil {
+		return nil, err
+	}
+
+	taskRunUserList, err := t.tru.GetTaskRunUserList(ctx, taskID, tr.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for index, _ := range taskUserList {
+		taskUserList[index].Status = entity.TaskStatusNotSign
+		for _, tru := range taskRunUserList {
+			if taskUserList[index].UserID == tru.UserID {
+				taskUserList[index].Status = entity.TaskStatusSign
+			}
+		}
+	}
+
+	return taskUserList, nil
 }
 
 func (t TaskUseCase) GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
@@ -121,6 +153,20 @@ func (t TaskUseCase) PrepareTaskRun(ctx context.Context, taskID int) (int, error
 	if err != nil {
 		return 0, err
 	}
+
+	{
+		// 队长自动签到
+		leader, ok, err := t.tu.GetTaskLeader(ctx, taskID)
+		if !ok {
+			return 0, errors.New("获取任务队长失败")
+		}
+
+		_, err = t.tru.AddTaskRunUser(ctx, taskID, taskRun.ID, leader.UserID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	return taskRun.ID, nil
 }
 

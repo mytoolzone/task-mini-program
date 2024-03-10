@@ -42,6 +42,17 @@ func (t TaskRun) GetPendingTaskRun(ctx context.Context, taskID int) (entity.Task
 	return taskRun, nil
 }
 
+func (t TaskRun) GetTaskLatestRun(ctx context.Context, taskID int) (entity.TaskRun, error) {
+	var taskRun entity.TaskRun
+	err := t.Db.WithContext(ctx).Where("task_id = ?",
+		taskID).Order("id desc").First(&taskRun).Error
+	if err != nil {
+		return entity.TaskRun{}, err
+	}
+
+	return taskRun, nil
+}
+
 func (t TaskRun) GetRunningTaskRun(ctx context.Context, taskID int) (entity.TaskRun, error) {
 	var taskRun entity.TaskRun
 	err := t.Db.WithContext(ctx).Where("task_id = ? and status = ?", taskID, entity.TaskStatusRunning).First(&taskRun).Error

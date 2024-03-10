@@ -822,10 +822,11 @@ func (r taskRoutes) approvedUsers(ctx *gin.Context) {
 		return
 	}
 
-	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, entity.UserTaskStatusAuditPass)
+	userTasks, err := r.task.GetApprovedTaskUsers(ctx.Request.Context(), taskID)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
 	}
+
 	http_util.Success(ctx, userTasks)
 }

@@ -20,6 +20,7 @@ const (
 	TaskStatusAuditFail = "audit_fail" // 审核失败
 	TaskStatusJoin      = "join"       // 待报名
 	TaskStatusTorun     = "torun"      // 开始报名
+	TaskStatusNotSign   = "not_sign"   // 开始报名
 	TaskStatusSign      = "sign"       // 开始报名
 	TaskStatusRunning   = "running"    // 报名结束
 	TaskStatusPaused    = "paused"     // 暂停
