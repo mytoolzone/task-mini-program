@@ -66,7 +66,7 @@ func (t TaskRunUserRepo) CancelTaskRun(ctx context.Context, taskID, taskRunID in
 
 func (t TaskRunUserRepo) GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error) {
 	var taskRunUsers []entity.TaskRunUser
-	err := t.Db.WithContext(ctx).Where("task_id = ? and task_run_id ", taskID, taskRunID).Find(&taskRunUsers).Error
+	err := t.Db.WithContext(ctx).Where("task_id = ? and task_run_id = ?", taskID, taskRunID).Find(&taskRunUsers).Error
 	return taskRunUsers, err
 }
 
