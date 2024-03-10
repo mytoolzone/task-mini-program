@@ -16,6 +16,13 @@ func NewTaskRunUserRepo(pg *postgres.Postgres) *TaskRunUserRepo {
 }
 
 func (t TaskRunUserRepo) AddTaskRunUser(ctx context.Context, taskID, taskRunID, userID int) (entity.TaskRunUser, error) {
+	// 判断是否存在避免重复添加
+	var existTaskRunUser = entity.TaskRunUser{}
+	t.Db.WithContext(ctx).Where("task_run_id = ? and user_id = ?", taskRunID, userID).First(&existTaskRunUser)
+	if existTaskRunUser.ID > 0 {
+		return existTaskRunUser, nil
+	}
+
 	var taskRunUser entity.TaskRunUser = entity.TaskRunUser{
 		TaskID:    taskID,
 		TaskRunID: taskRunID,
@@ -23,7 +30,7 @@ func (t TaskRunUserRepo) AddTaskRunUser(ctx context.Context, taskID, taskRunID, 
 		Status:    entity.TaskStatusSign,
 		CreatedAt: time.Now(),
 	}
-	if err := t.Db.Create(&taskRunUser).Error; err != nil {
+	if err := t.Db.WithContext(ctx).Create(&taskRunUser).Error; err != nil {
 		return entity.TaskRunUser{}, err
 	}
 	return taskRunUser, nil
@@ -57,9 +64,9 @@ func (t TaskRunUserRepo) CancelTaskRun(ctx context.Context, taskID, taskRunID in
 	}).Error
 }
 
-func (t TaskRunUserRepo) GetTaskRunUserList(ctx context.Context, taskID int) ([]entity.TaskRunUser, error) {
+func (t TaskRunUserRepo) GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error) {
 	var taskRunUsers []entity.TaskRunUser
-	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&taskRunUsers).Error
+	err := t.Db.WithContext(ctx).Where("task_id = ? and task_run_id ", taskID, taskRunID).Find(&taskRunUsers).Error
 	return taskRunUsers, err
 }
 

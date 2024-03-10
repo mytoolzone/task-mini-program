@@ -97,6 +97,7 @@ type (
 		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
 		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
 		GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error)
+		GetApprovedTaskUsers(ctx context.Context, id int) ([]entity.UserTask, error)
 	}
 
 	// TaskRepo -.
@@ -124,6 +125,7 @@ type (
 		FinishTaskRun(ctx context.Context, taskID int) error
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
 		CancelTaskRun(ctx context.Context, id int) error
+		GetTaskLatestRun(ctx context.Context, id int) (entity.TaskRun, error)
 	}
 
 	// TaskRunLogRepo -.
@@ -142,7 +144,8 @@ type (
 		StartTaskRun(ctx context.Context, taskID, taskRunID int) error
 		// FinishTaskRun 完成子任务执行时候调用
 		FinishTaskRun(ctx context.Context, taskID, taskRunID int) error
-		GetTaskRunUserList(ctx context.Context, taskID int) ([]entity.TaskRunUser, error)
+		// GetTaskRunUserList 获取签到用户
+		GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error)
 		CancelTaskRun(ctx context.Context, id int, id2 int) error
 		GetUserTaskSummary(ctx context.Context, id int) (entity.UserTaskSummary, error)
 	}
@@ -162,6 +165,8 @@ type (
 		GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetUserJoinTaskList 获取某个用户参与的任务列表
 		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error)
+		// GetTaskLeader 分配用户在任务中角色
+		GetTaskLeader(ctx context.Context, taskID int) (entity.UserTask, bool, error)
 	}
 
 	// Notice -.
