@@ -63,8 +63,16 @@ func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]en
 	}
 
 	tr, err := t.tr.GetTaskLatestRun(ctx, taskID)
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
+	}
+
+	for index, _ := range taskUserList {
+		taskUserList[index].Status = entity.TaskStatusNotSign
+	}
+
+	if err == gorm.ErrRecordNotFound {
+		return taskUserList, nil
 	}
 
 	taskRunUserList, err := t.tru.GetTaskRunUserList(ctx, taskID, tr.ID)
@@ -73,7 +81,6 @@ func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]en
 	}
 
 	for index, _ := range taskUserList {
-		taskUserList[index].Status = entity.TaskStatusNotSign
 		for _, tru := range taskRunUserList {
 			if taskUserList[index].UserID == tru.UserID {
 				taskUserList[index].Status = entity.TaskStatusSign
