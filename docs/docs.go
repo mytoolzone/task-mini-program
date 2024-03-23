@@ -2189,6 +2189,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "images": {
+                    "type": "string"
+                },
                 "leader": {
                     "type": "integer"
                 },
