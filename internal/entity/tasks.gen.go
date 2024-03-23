@@ -36,6 +36,7 @@ type Task struct {
 	Location     string         `gorm:"column:location" json:"location"`
 	MaxUserCount int            `gorm:"column:max_user_count" json:"max_user_count"`
 	Status       string         `gorm:"column:status" json:"status"`
+	Images       string         `gorm:"column:images" json:"images"`
 	// type 表示任务的类型·。
 	// Enum: task,post
 	// Description: 任务的类型可以task正常任务，或者是post通告。
