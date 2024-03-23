@@ -2189,6 +2189,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "images": {
+                    "type": "string"
+                },
                 "leader": {
                     "type": "integer"
                 },
@@ -2208,6 +2211,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type 表示任务的类型·。\nEnum: task,post\nDescription: 任务的类型可以task正常任务，或者是post通告。",
                     "type": "string"
                 }
             }

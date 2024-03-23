@@ -292,7 +292,7 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 		return err
 	}
 
-	if task.Status == entity.TaskStatusRunning {
+	if task.Type == entity.TaskTypeTask && task.Status == entity.TaskStatusRunning {
 		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {

@@ -90,6 +90,8 @@ definitions:
         type: string
       id:
         type: integer
+      images:
+        type: string
       leader:
         type: integer
       location:
@@ -103,6 +105,12 @@ definitions:
       require:
         type: string
       status:
+        type: string
+      type:
+        description: |-
+          type 表示任务的类型·。
+          Enum: task,post
+          Description: 任务的类型可以task正常任务，或者是post通告。
         type: string
     type: object
   entity.TaskRun:
