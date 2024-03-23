@@ -103,6 +103,9 @@ func (r taskRoutes) create(ctx *gin.Context) {
 
 	task.CreateBy = http_util.GetUserID(ctx)
 	task.Status = entity.TaskStatusNew
+	if task.Type == "" {
+		task.Type = entity.TaskTypeTask
+	}
 	err := r.task.CreateTask(ctx.Request.Context(), &task)
 	if err != nil {
 		http_util.Error(ctx, app_code.WithError(app_code.ErrorCreateTask, err))

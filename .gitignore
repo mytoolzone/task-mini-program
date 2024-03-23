@@ -4,6 +4,11 @@
 
 # Config
 .env
+.env.prod
+.env.dev
+.env.test
+.env.local
+.env.ontest
 
 # Binaries for programs and plugins
 *.exe

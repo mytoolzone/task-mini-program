@@ -17,6 +17,11 @@ import (
 
 const TableNameTask = "tasks"
 
+const (
+	TaskTypeTask = "task"
+	TaskTypePost = "post"
+)
+
 // Task mapped from table <tasks>
 type Task struct {
 	ID           int            `gorm:"column:id;primaryKey;autoIncrement:true" json:"id" `
@@ -31,8 +36,12 @@ type Task struct {
 	Location     string         `gorm:"column:location" json:"location"`
 	MaxUserCount int            `gorm:"column:max_user_count" json:"max_user_count"`
 	Status       string         `gorm:"column:status" json:"status"`
-	Leader       int            `gorm:"column:leader" json:"leader"`
-	Recorder     int            `gorm:"column:recorder" json:"recorder"`
+	// type 表示任务的类型·。
+	// Enum: task,post
+	// Description: 任务的类型可以task正常任务，或者是post通告。
+	Type     string `gorm:"column:type" json:"type"`
+	Leader   int    `gorm:"column:leader" json:"leader"`
+	Recorder int    `gorm:"column:recorder" json:"recorder"`
 }
 
 // TableName Task's table name

@@ -4,7 +4,7 @@ export
 LOCAL_BIN:=$(CURDIR)/bin
 PATH:=$(LOCAL_BIN):$(PATH)
 DOCKER_IMAGE_NAME:=xytschool/task-mini-program
-DOCKER_IMAGE_TAG:=1.0.2
+DOCKER_IMAGE_TAG:=1.2.1
 
 # HELP =================================================================================================================
 # This will output the help for each task
