@@ -71,7 +71,7 @@ func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]en
 		taskUserList[index].Status = entity.TaskStatusNotSign
 	}
 
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return taskUserList, nil
 	}
 

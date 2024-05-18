@@ -18,14 +18,17 @@ func IsValidRole(role string) bool {
 const (
 	TaskStatusNew       = "new"        // 新任务
 	TaskStatusAuditFail = "audit_fail" // 审核失败
-	TaskStatusJoin      = "join"       // 待报名
-	TaskStatusTorun     = "torun"      // 开始报名
-	TaskStatusNotSign   = "not_sign"   // 开始报名
-	TaskStatusSign      = "sign"       // 开始报名
-	TaskStatusRunning   = "running"    // 报名结束
-	TaskStatusPaused    = "paused"     // 暂停
-	TaskStatusFinished  = "finished"   // 完成
-	TaskStatusCanceled  = "canceled"   // 取消
+	TaskStatusTorun     = "torun"      // 审核通过,开始报名
+	TaskStatusRunning   = "running"    // 开始执行任务
+	TaskStatusPaused    = "paused"     // 暂停任务
+	TaskStatusFinished  = "finished"   // 完成任务
+	TaskStatusCanceled  = "canceled"   // 取消任务
+)
+
+// 用户任务表状态
+const (
+	TaskStatusNotSign = "not_sign" // 开始报名
+	TaskStatusSign    = "sign"     // 开始报名
 )
 
 // 用户状态 有效 冻结
