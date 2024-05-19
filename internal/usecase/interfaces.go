@@ -96,7 +96,7 @@ type (
 		// UploadRunLog 记录员上传任务记录
 		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
 		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
-		GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error)
+		GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int) (entity.UserTaskSummary, error)
 		GetApprovedTaskUsers(ctx context.Context, id int) ([]entity.UserTask, error)
 	}
 
@@ -147,7 +147,7 @@ type (
 		// GetTaskRunUserList 获取签到用户
 		GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error)
 		CancelTaskRun(ctx context.Context, id int, id2 int) error
-		GetUserTaskSummary(ctx context.Context, id int) (entity.UserTaskSummary, error)
+		GetUserTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int) (entity.UserTaskSummary, error)
 	}
 
 	// UserTaskRepo -.

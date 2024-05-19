@@ -729,9 +729,24 @@ func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
 // @Param       userID query int true "userID"
 // @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
 func (r taskRoutes) userSummary(ctx *gin.Context) {
-	userID := http_util.GetUserID(ctx)
+	var userID, taskID int
+	userID = http_util.GetUserID(ctx)
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
+		i, err := strconv.Atoi(ctx.Query("user_id"))
+		if err == nil {
+			userID = i
+		}
+	}
+	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
+	if err == nil {
+		taskID = j
+	}
+	startTime := ctx.Query("start_time")
+	endTime := ctx.Query("end_time")
+	// fmt.Printf("startTime %#v,endTime %#v,userole %#v,taskid %#v\n", startTime, endTime, userRole, taskID)
 
-	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID)
+	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
