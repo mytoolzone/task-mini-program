@@ -371,8 +371,11 @@ func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, stat
 	return nil
 }
 
-func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int) (entity.UserTaskSummary, error) {
-	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID)
+func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)
+}
+func (t TaskUseCase) GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummaryDetail(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)
 }
 
 func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
