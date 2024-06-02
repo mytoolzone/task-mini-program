@@ -3,9 +3,10 @@ package postgres
 
 import (
 	"fmt"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )

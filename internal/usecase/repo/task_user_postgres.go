@@ -143,6 +143,9 @@ func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID in
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return entity.UserTask{}, nil
 	}
+	if err := t.Db.WithContext(ctx).Debug().Where("id = ?", userID).First(&UserTask.User).Error; err != nil {
+		return entity.UserTask{}, err
+	}
 	return UserTask, err
 }
 

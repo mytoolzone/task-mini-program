@@ -258,7 +258,7 @@ func (t TaskUseCase) FinishTaskRun(ctx context.Context, taskID int) error {
 	}
 
 	if task.Status == entity.TaskStatusRunning {
-		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
+		run, err := t.tr.GetRunningTaskRun(ctx, taskID) //子任务ID的数据
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return app_code.New(app_code.ErrorTaskRunNotFound, "没有正在执行中任务")

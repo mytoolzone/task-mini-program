@@ -52,8 +52,14 @@ func (t TaskRunUserRepo) FinishTaskRun(ctx context.Context, taskID, taskRunID in
 	tru := entity.TaskRunUser{
 		Status:     entity.TaskStatusFinished,
 		FinishedAt: time.Now(),
+		Duration:   0,
 	}
-	// 更新task_run_user表中 finished_at 为当前时间
+	// 更新task_run_user表中 finished_at 为当前时间，同时计算有效工时分钟数
+	var taskRunUser entity.TaskRunUser
+	if err := t.Db.Debug().WithContext(ctx).Model(&entity.TaskRunUser{}).Where("task_id = ? and task_run_id = ?", taskID, taskRunID).First(&taskRunUser).Error; err != nil {
+		return err
+	}
+	tru.Duration = int(tru.FinishedAt.Sub(taskRunUser.CreatedAt).Minutes())
 	return t.Db.Debug().WithContext(ctx).Where("task_id = ? and task_run_id =? ", taskID, taskRunID).
 		Updates(tru).Error
 }
