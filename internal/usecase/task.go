@@ -57,16 +57,17 @@ func (t TaskUseCase) GetTaskUsers(ctx context.Context, taskID int, status string
 }
 
 func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+	// 查询报名审核过的人员
 	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, entity.UserTaskStatusAuditPass)
 	if err != nil {
 		return nil, err
 	}
-
+	// 查询最后一次子任务
 	tr, err := t.tr.GetTaskLatestRun(ctx, taskID)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
-
+	// 循环遍历人员列表，设置状态为未签到
 	for index, _ := range taskUserList {
 		taskUserList[index].Status = entity.TaskStatusNotSign
 	}
@@ -74,12 +75,12 @@ func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]en
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return taskUserList, nil
 	}
-
+	// 查询子任务签到的人员列表
 	taskRunUserList, err := t.tru.GetTaskRunUserList(ctx, taskID, tr.ID)
 	if err != nil {
 		return nil, err
 	}
-
+	// 将其签到人员的状态设置为已签到
 	for index, _ := range taskUserList {
 		for _, tru := range taskRunUserList {
 			if taskUserList[index].UserID == tru.UserID {

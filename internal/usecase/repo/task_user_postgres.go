@@ -66,12 +66,12 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 	userTask.TaskID = taskID
 	userTask.UserID = userID
 
-	if role == entity.UserTaskRoleLeader {
+	if role == entity.UserTaskRoleLeader { //队长
 		leader, ok, err := t.GetTaskLeader(ctx, taskID)
 		if err != nil {
 			return err
 		}
-		if ok {
+		if ok { //存在更新队长
 			leader.Role = entity.UserRoleMember
 			if err := t.Db.WithContext(ctx).Save(&leader).Error; err != nil {
 				return err
@@ -79,7 +79,7 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 		}
 	}
 
-	if role == entity.UserTaskRoleRecorder {
+	if role == entity.UserTaskRoleRecorder { //记录员
 		recorder, ok, err := t.GetTaskRecorder(ctx, taskID)
 		if err != nil {
 			return err

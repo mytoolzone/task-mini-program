@@ -3,10 +3,11 @@ package repo
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
 type TaskRun struct {
@@ -81,6 +82,7 @@ func (t TaskRun) FinishTaskRun(ctx context.Context, taskID int) error {
 		return err
 	}
 	taskRun.Status = entity.TaskStatusFinished
+	taskRun.Endat = time.Now()
 	return t.Db.WithContext(ctx).Where("task_id = ?", taskID).Updates(&taskRun).Error
 }
 

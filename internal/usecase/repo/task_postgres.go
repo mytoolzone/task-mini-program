@@ -2,10 +2,12 @@ package repo
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
-	"strings"
 )
 
 type TaskRepo struct {
@@ -53,7 +55,24 @@ func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Ta
 }
 
 func (t *TaskRepo) CreateTask(ctx context.Context, task *entity.Task) error {
-	return t.Db.Create(task).Error
+	var err error
+	if err = t.Db.Create(task).Error; err != nil {
+		return err
+	}
+	if task.Leader > 0 {
+		// 新增队长
+		err = t.Db.Create(&entity.UserTask{
+			TaskID:    task.ID,
+			UserID:    task.Leader, //队长ID
+			Role:      entity.UserTaskRoleLeader,
+			Status:    entity.UserTaskStatusAuditPass,
+			CreatedAt: time.Now(),
+		}).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
@@ -123,6 +142,7 @@ func (t *TaskRepo) FinishTask(ctx context.Context, taskID int) error {
 		return err
 	}
 	task.Status = entity.TaskStatusFinished
+	task.FinishedAt = time.Now()
 	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 }
 

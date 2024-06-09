@@ -59,7 +59,7 @@ func (t TaskRunUserRepo) FinishTaskRun(ctx context.Context, taskID, taskRunID in
 	if err := t.Db.Debug().WithContext(ctx).Model(&entity.TaskRunUser{}).Where("task_id = ? and task_run_id = ?", taskID, taskRunID).First(&taskRunUser).Error; err != nil {
 		return err
 	}
-	tru.Duration = int(tru.FinishedAt.Sub(taskRunUser.CreatedAt).Minutes())
+	tru.Duration = int(tru.FinishedAt.Sub(taskRunUser.StartAt).Minutes())
 	return t.Db.Debug().WithContext(ctx).Where("task_id = ? and task_run_id =? ", taskID, taskRunID).
 		Updates(tru).Error
 }
