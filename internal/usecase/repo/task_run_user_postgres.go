@@ -85,10 +85,10 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 	var err error
 	// 默认当天时间
 	if startTime == "" {
-		startTime = time.Now().Format("2006-01-02")
+		startTime = time.Now().Format("2006-01-02") + " 00:00:00"
 	}
 	if endTime == "" {
-		endTime = time.Now().Format("2006-01-02")
+		endTime = time.Now().Format("2006-01-02") + " 23:59:59"
 	}
 	// 任务标题，用户ID，开始时间，结束时间
 	// 查工时总计，任务列表，每个任务的总工时，开始结束时间
