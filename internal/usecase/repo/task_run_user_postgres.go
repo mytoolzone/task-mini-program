@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -78,7 +79,7 @@ func (t TaskRunUserRepo) GetTaskRunUserList(ctx context.Context, taskID int, tas
 	return taskRunUsers, err
 }
 
-func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
+func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error) {
 
 	var userTaskSummary entity.UserTaskSummary
 	var query, query1, query2 *gorm.DB
@@ -157,6 +158,19 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 						Select("sum(duration) as total_duration,task_id")
 				}
 			}
+			// id降序，分页每页20条,默认查第一页
+			if page != "" && page_size != "" {
+				// 先将page和page_size强制转int
+				page, _ := strconv.Atoi(page)
+				page_size, _ := strconv.Atoi(page_size)
+				if page > 0 && page_size > 0 {
+					query2.Order("task_run_users.task_id desc").Limit(page_size).Offset((page - 1) * page_size)
+				} else {
+					query2.Order("task_run_users.task_id desc").Limit(20)
+				}
+			} else {
+				query2.Order("task_run_users.task_id desc").Limit(20)
+			}
 			err = query2.Scan(&userTaskSummary.UserTaskSummaryList).Error
 
 			if err != nil {
@@ -207,6 +221,8 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 	}
 	return userTaskSummary, nil
 }
+
+// 查询任务工时详情
 func (t TaskRunUserRepo) GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
 	var userTaskSummary entity.UserTaskSummary
 	var query, query1, query2 *gorm.DB

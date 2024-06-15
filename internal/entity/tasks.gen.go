@@ -43,6 +43,7 @@ type Task struct {
 	Type     string `gorm:"column:type" json:"type"`
 	Leader   int    `gorm:"column:leader" json:"leader"`
 	Recorder int    `gorm:"column:recorder" json:"recorder"`
+	StartAt 	time.Time		`json:"start_at"`
 }
 
 // TableName Task's table name

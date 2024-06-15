@@ -372,8 +372,8 @@ func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, stat
 	return nil
 }
 
-func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
-	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)
+func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
 }
 func (t TaskUseCase) GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
 	return t.tru.GetUserTaskSummaryDetail(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)

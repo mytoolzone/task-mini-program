@@ -750,9 +750,10 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	endTime := ctx.Query("end_time")
 	taskName := ctx.Query("task_name")
 	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
-	// fmt.Printf("startTime %#v,endTime %#v,userole %#v,taskid %#v\n", startTime, endTime, userRole, taskID)
+	page := ctx.Query("page")                   //页数
+	page_size := ctx.Query("page_size")         //分页数量
 
-	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user)
+	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

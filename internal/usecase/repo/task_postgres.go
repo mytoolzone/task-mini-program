@@ -91,6 +91,22 @@ func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, l
 func (t *TaskRepo) GetByTaskID(ctx context.Context, taskID int) (entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
+	// 查询第一条子任务的开始时间
+	if err == nil {
+		var taskRun entity.TaskRun
+		err = t.Db.WithContext(ctx).Where("task_id = ?", taskID).Order("id asc").First(&taskRun).Error
+		if err == nil {
+			task.StartAt = taskRun.StartAt
+		}
+	}
+	// 查询最后一条子任务是结束状态的结束时间
+	if err == nil {
+		var taskRun entity.TaskRun
+		err = t.Db.WithContext(ctx).Where("task_id = ?", taskID).Where("status = ?", entity.TaskStatusFinished).Order("id desc").First(&taskRun).Error
+		if err == nil {
+			task.FinishedAt = taskRun.Endat
+		}
+	}
 	return task, err
 }
 
