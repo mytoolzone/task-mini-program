@@ -11,3 +11,14 @@ type UserTaskSummaryList struct {
 	TASK_ID       int64 `json:"task_id"`                  //任务ID
 	User_ID       int64 `json:"user_id"`                  //用户ID
 }
+type ExportTaskSummary struct {
+	TotalDuration int64  `json:"total_duration,omitempty"` // 总任务时长,默认0
+	TASK_ID       int64  `json:"task_id"`                  //任务ID
+	User_ID       int64  `json:"user_id"`                  //用户ID
+	Task_Name     string `json:"task_name"`                //任务名称
+	Start_Time    string `json:"start_time"`               //开始时间
+	End_Time      string `json:"end_time"`                 //结束时间
+}
+type ExportResult struct {
+	URL string `json:"url"` //导出url
+}

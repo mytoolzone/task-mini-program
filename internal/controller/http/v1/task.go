@@ -71,6 +71,8 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/userJoinTask", ur.userJoinTask)
 		// 工时统计查询列表
 		h.GET("/userSummary", ur.userSummary)
+		// 工时导出查询列表
+		h.GET("/ExportTaskSummary", ur.ExportTaskSummary)
 		// 工时统计查询详情
 		h.GET("/userSummaryDetail", ur.userSummaryDetail)
 
@@ -754,6 +756,46 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	page_size := ctx.Query("page_size")         //分页数量
 
 	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+
+	http_util.Success(ctx, summary)
+}
+
+// @Summary     User summary
+// @Description 导出任务工时
+// @ID          user-summary
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       userID query int true "userID"
+// @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
+func (r taskRoutes) ExportTaskSummary(ctx *gin.Context) {
+	var userID, taskID int
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
+		i, err := strconv.Atoi(ctx.Query("user_id"))
+		if err == nil {
+			userID = i
+		}
+	} else {
+		userID = http_util.GetUserID(ctx) //非管理员查自己的数据
+	}
+	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
+	if err == nil {
+		taskID = j
+	}
+	startTime := ctx.Query("start_time")
+	endTime := ctx.Query("end_time")
+	taskName := ctx.Query("task_name")
+	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
+	page := ctx.Query("page")                   //页数
+	page_size := ctx.Query("page_size")         //分页数量
+
+	summary, err := r.task.ExportTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

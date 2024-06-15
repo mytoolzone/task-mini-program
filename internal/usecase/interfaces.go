@@ -97,6 +97,7 @@ type (
 		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
 		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
 		GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error)
+		ExportTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error)
 		GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error)
 		GetApprovedTaskUsers(ctx context.Context, id int) ([]entity.UserTask, error)
 	}
@@ -149,6 +150,7 @@ type (
 		GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error)
 		CancelTaskRun(ctx context.Context, id int, id2 int) error
 		GetUserTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error)
+		ExportTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error)
 		GetUserTaskSummaryDetail(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error)
 	}
 

@@ -379,6 +379,11 @@ func (t TaskUseCase) GetUserTaskSummaryDetail(ctx context.Context, userID int, s
 	return t.tru.GetUserTaskSummaryDetail(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)
 }
 
+// 导出任务工时
+func (t TaskUseCase) ExportTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error) {
+	return t.tru.ExportTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+}
+
 func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
 	return t.tu.GetUserJoinTaskList(ctx, userID, status, lastID)
 }
