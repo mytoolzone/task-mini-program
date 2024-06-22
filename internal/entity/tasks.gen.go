@@ -43,7 +43,9 @@ type Task struct {
 	Type     string `gorm:"column:type" json:"type"`
 	Leader   int    `gorm:"column:leader" json:"leader"`
 	Recorder int    `gorm:"column:recorder" json:"recorder"`
-	StartAt 	time.Time		`json:"start_at"`
+	StartAt 	time.Time	`gorm:"column:finished_at" json:"start_at"`
+	MeetingAt 	string 	`gorm:"column:meeting_at;type:timestamp" json:"meeting_at"`
+	Contacter 	int    `gorm:"column:contacter" json:"contacter"`
 }
 
 // TableName Task's table name
