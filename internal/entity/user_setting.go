@@ -45,4 +45,5 @@ type UserSetting struct {
 	InsuranceName         string      `json:"insurance_name"`
 	InsurancePhoto        string      `json:"insurance_photo"`
 	Insurances            []Insurance `json:"insurances"`
+	AvatorUrl             string      `json:"avator_url"` //用户头像信息
 }
