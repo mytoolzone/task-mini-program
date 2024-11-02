@@ -80,6 +80,8 @@ definitions:
     type: object
   entity.Task:
     properties:
+      contacter:
+        type: integer
       create_by:
         type: integer
       created_at:
@@ -98,11 +100,15 @@ definitions:
         type: string
       max_user_count:
         type: integer
+      meeting_at:
+        type: string
       name:
         type: string
       recorder:
         type: integer
       require:
+        type: string
+      start_at:
         type: string
       status:
         type: string
@@ -178,6 +184,9 @@ definitions:
     properties:
       address:
         type: string
+      avator_url:
+        description: 用户头像信息
+        type: string
       birthday:
         type: string
       education:
@@ -250,9 +259,28 @@ definitions:
     type: object
   entity.UserTaskSummary:
     properties:
-      total_duration:
+      total_task_duration:
+        description: 总任务时长
         type: integer
-      total_task:
+      total_task_num:
+        description: 总任务数
+        type: integer
+      user_task_summary_list:
+        description: 任务列表信息
+        items:
+          $ref: '#/definitions/entity.UserTaskSummaryList'
+        type: array
+    type: object
+  entity.UserTaskSummaryList:
+    properties:
+      task_id:
+        description: 任务ID
+        type: integer
+      total_duration:
+        description: 总任务时长,默认0
+        type: integer
+      user_id:
+        description: 用户ID
         type: integer
     type: object
   gorm.DeletedAt:
@@ -363,7 +391,7 @@ definitions:
       url:
         type: string
     type: object
-host: task.mytool.zone
+host: m.yllt.cc
 info:
   contact: {}
   description: Task Mini Program API

@@ -6,7 +6,7 @@ PATH:=$(LOCAL_BIN):$(PATH)
 # DOCKER_IMAGE_NAME:=xytschool/task-mini-program
 # DOCKER_IMAGE_TAG:=1.2.8
 DOCKER_IMAGE_NAME:=registry.cn-beijing.aliyuncs.com/laravelschool/web
-DOCKER_IMAGE_TAG:=xcx1.0.6
+DOCKER_IMAGE_TAG:=xcx1.0.7
 
 # HELP =================================================================================================================
 # This will output the help for each task

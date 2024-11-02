@@ -2174,6 +2174,9 @@ const docTemplate = `{
         "entity.Task": {
             "type": "object",
             "properties": {
+                "contacter": {
+                    "type": "integer"
+                },
                 "create_by": {
                     "type": "integer"
                 },
@@ -2201,6 +2204,9 @@ const docTemplate = `{
                 "max_user_count": {
                     "type": "integer"
                 },
+                "meeting_at": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -2208,6 +2214,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "require": {
+                    "type": "string"
+                },
+                "start_at": {
                     "type": "string"
                 },
                 "status": {
@@ -2316,6 +2325,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "address": {
+                    "type": "string"
+                },
+                "avator_url": {
+                    "description": "用户头像信息",
                     "type": "string"
                 },
                 "birthday": {
@@ -2427,10 +2440,36 @@ const docTemplate = `{
         "entity.UserTaskSummary": {
             "type": "object",
             "properties": {
-                "total_duration": {
+                "total_task_duration": {
+                    "description": "总任务时长",
                     "type": "integer"
                 },
-                "total_task": {
+                "total_task_num": {
+                    "description": "总任务数",
+                    "type": "integer"
+                },
+                "user_task_summary_list": {
+                    "description": "任务列表信息",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.UserTaskSummaryList"
+                    }
+                }
+            }
+        },
+        "entity.UserTaskSummaryList": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "description": "任务ID",
+                    "type": "integer"
+                },
+                "total_duration": {
+                    "description": "总任务时长,默认0",
+                    "type": "integer"
+                },
+                "user_id": {
+                    "description": "用户ID",
                     "type": "integer"
                 }
             }
@@ -2608,7 +2647,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "task.mytool.zone",
+	Host:             "m.yllt.cc",
 	BasePath:         "/v1",
 	Schemes:          []string{},
 	Title:            "Task Mini Program",
