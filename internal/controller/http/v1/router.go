@@ -23,7 +23,7 @@ import (
 // @title       Task Mini Program
 // @description Task Mini Program API
 // @version     1.0
-// @host        task.mytool.zone
+// @host        m.yllt.cc
 // @BasePath    /v1
 func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk usecase.Task, n usecase.Notice, fileUseCase *usecase.FileUseCase, auth auth.Auth) {
 	// Options

@@ -30,6 +30,7 @@ var GenModel = &cobra.Command{
 
 		pwd, _ := os.Getwd()
 		g := gen.NewGenerator(gen.Config{
+			ModelPkgPath: pwd + "/internal/entity/", //model path
 			OutPath: pwd + "/internal/entity/query",                                     // output path
 			Mode:    gen.WithoutContext | gen.WithDefaultQuery | gen.WithQueryInterface, // generate mode
 		})
@@ -39,7 +40,8 @@ var GenModel = &cobra.Command{
 			fmt.Errorf("gorm.Open err:%s", err.Error())
 		}
 		g.UseDB(gormdb) // reuse your gorm db-cmd
-		g.GenerateAllTable()
+		// g.GenerateAllTable()
+		g.GenerateModel("users")
 		// Generate the code
 		g.Execute()
 
