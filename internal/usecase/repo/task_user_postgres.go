@@ -71,7 +71,7 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 		if err != nil {
 			return err
 		}
-		if ok { //存在更新队长
+		if ok { //存在更新为队员
 			leader.Role = entity.UserRoleMember
 			if err := t.Db.WithContext(ctx).Save(&leader).Error; err != nil {
 				return err
@@ -87,6 +87,20 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 		if ok {
 			recorder.Role = entity.UserRoleMember
 			if err := t.Db.WithContext(ctx).Save(&recorder).Error; err != nil {
+				return err
+			}
+
+		}
+	}
+
+	if role == entity.UserTaskRoleSafer { //安全员
+		safer, ok, err := t.GetTaskSafer(ctx, taskID)
+		if err != nil {
+			return err
+		}
+		if ok {
+			safer.Role = entity.UserRoleMember
+			if err := t.Db.WithContext(ctx).Save(&safer).Error; err != nil {
 				return err
 			}
 
@@ -117,6 +131,19 @@ func (t UserTaskRepo) GetTaskLeader(ctx context.Context, taskID int) (entity.Use
 func (t UserTaskRepo) GetTaskRecorder(ctx context.Context, taskID int) (entity.UserTask, bool, error) {
 	var userTask entity.UserTask
 	err := t.Db.WithContext(ctx).Where("task_id = ? and role = ?", taskID, entity.UserTaskRoleRecorder).First(&userTask).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return entity.UserTask{}, false, nil
+	}
+	if err != nil {
+		return entity.UserTask{}, false, err
+	}
+	return userTask, true, nil
+}
+
+// GetTaskSafer 获取任务中的安全员
+func (t UserTaskRepo) GetTaskSafer(ctx context.Context, taskID int) (entity.UserTask, bool, error) {
+	var userTask entity.UserTask
+	err := t.Db.WithContext(ctx).Where("task_id = ? and role = ?", taskID, entity.UserTaskRoleSafer).First(&userTask).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return entity.UserTask{}, false, nil
 	}
