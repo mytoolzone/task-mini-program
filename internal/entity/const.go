@@ -55,6 +55,7 @@ const (
 	UserTaskRoleLeader   = "leader"
 	UserTaskRoleMember   = "member"
 	UserTaskRoleRecorder = "recorder"
+	UserTaskRoleSafer    = "safer" //安全员
 	UserTaskRoleNone     = "none"
 )
 

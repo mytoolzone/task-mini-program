@@ -51,7 +51,7 @@ func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, sta
 
 // AssignRole 分配角色
 func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role string) error {
-	if role != entity.UserTaskRoleRecorder && role != entity.UserTaskRoleLeader && role != entity.UserTaskRoleMember {
+	if role != entity.UserTaskRoleRecorder && role != entity.UserTaskRoleLeader && role != entity.UserTaskRoleMember && role != entity.UserTaskRoleSafer {
 		return app_code.New(app_code.ErrorBadRequest, "role invalid")
 	}
 
