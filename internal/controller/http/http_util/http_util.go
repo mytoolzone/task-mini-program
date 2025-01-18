@@ -31,6 +31,7 @@ func Success(ctx *gin.Context, data interface{}) {
 
 func Error(c *gin.Context, err error) {
 	appErr, ok := err.(*app_code.AppError)
+	// fmt.Printf("appErr: %#v", appErr.Code)
 	if !ok {
 		glog.Errorf("http request error %+v", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, Response{
@@ -55,13 +56,14 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorTokenNotSet:
 		statusCode = http.StatusBadRequest
 	case app_code.ErrorRepeat:
+	case app_code.ErrorAuthFailed, app_code.ErrorTokenTimeout:
 		statusCode = http.StatusOK
 	}
 
 	glog.Errorf("http request code [%+v] - err %+v", appErr.Code, appErr.Message)
 	c.AbortWithStatusJSON(statusCode, Response{
-		Error: appErr.Message,
 		Code:  appErr.Code,
+		Error: appErr.Message,
 	})
 	return
 }
