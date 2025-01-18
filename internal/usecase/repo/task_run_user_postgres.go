@@ -88,12 +88,12 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 	var query, query1, query2 *gorm.DB
 	var err error
 	// 默认当天时间
-	if startTime == "" {
+	/* if startTime == "" {
 		startTime = time.Now().Format("2006-01-02") + " 00:00:00"
 	}
 	if endTime == "" {
 		endTime = time.Now().Format("2006-01-02") + " 23:59:59"
-	}
+	} */
 	// 任务标题，用户ID，开始时间，结束时间
 	// 查工时总计，任务列表，每个任务的总工时，开始结束时间
 	query = t.Db.WithContext(ctx).Debug().Model(&entity.TaskRunUser{})
@@ -182,7 +182,7 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 		} else {
 			// 查总任务时长
 			query1 = query1.
-				Where("status = ?", userID, entity.TaskStatusFinished)
+				Where("status = ?", entity.TaskStatusFinished)
 			if userID > 0 {
 				query1 = query1.Where("user_id = ?", userID)
 			}
@@ -196,7 +196,7 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 			}
 			// 分组查询每个任务的总时长
 			query2 = query2.
-				Where("task_run_users.user_id = ? and task_run_users.status = ?", userID, entity.TaskStatusFinished)
+				Where("task_run_users.status = ?", entity.TaskStatusFinished)
 			if taskID > 0 {
 				query2 = query2.Where("task_run_users.task_id = ?", taskID)
 			}
@@ -214,6 +214,19 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 						Group("task_run_users.task_id").
 						Select("sum(duration) as total_duration,task_id")
 				}
+			}
+			// id降序，分页每页20条,默认查第一页
+			if page != "" && page_size != "" {
+				// 先将page和page_size强制转int
+				page, _ := strconv.Atoi(page)
+				page_size, _ := strconv.Atoi(page_size)
+				if page > 0 && page_size > 0 {
+					query2.Order("task_run_users.task_id desc").Limit(page_size).Offset((page - 1) * page_size)
+				} else {
+					query2.Order("task_run_users.task_id desc").Limit(20)
+				}
+			} else {
+				query2.Order("task_run_users.task_id desc").Limit(20)
 			}
 			err = query2.Scan(&userTaskSummary.UserTaskSummaryList).Error
 
