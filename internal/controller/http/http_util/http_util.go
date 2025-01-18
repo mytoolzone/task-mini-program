@@ -41,6 +41,7 @@ func Error(c *gin.Context, err error) {
 	}
 
 	statusCode := http.StatusInternalServerError
+	// 匹配code转成httpcode编码
 	switch appErr.Code {
 	case app_code.ErrorBadRequest:
 		statusCode = http.StatusBadRequest
@@ -51,6 +52,8 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorTaskExist:
 	case app_code.ErrorUserExist:
 		statusCode = http.StatusConflict
+	case app_code.ErrorTokenNotSet:
+		statusCode = http.StatusBadRequest
 	case app_code.ErrorRepeat:
 		statusCode = http.StatusOK
 	}
