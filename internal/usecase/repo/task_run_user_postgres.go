@@ -105,7 +105,7 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 	} else {
 		// 先查完成任务总数是否大于0
 		query = query.
-			Where("status = ?", entity.TaskStatusFinished)
+			Where("task_run_users.status = ?", entity.TaskStatusFinished)
 	}
 	if userID > 0 {
 		query = query.Where("user_id = ?", userID)
@@ -182,7 +182,7 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 		} else {
 			// 查总任务时长
 			query1 = query1.
-				Where("status = ?", entity.TaskStatusFinished)
+				Where("task_run_users.status = ?", entity.TaskStatusFinished)
 			if userID > 0 {
 				query1 = query1.Where("user_id = ?", userID)
 			}
@@ -254,7 +254,7 @@ func (t TaskRunUserRepo) GetUserTaskSummaryDetail(ctx context.Context, userID in
 	} else {
 		// 先查完成任务总数是否大于0
 		query = query.
-			Where("status = ?", entity.TaskStatusFinished)
+			Where("task_run_users.status = ?", entity.TaskStatusFinished)
 	}
 	if userID > 0 {
 		query = query.Where("user_id = ?", userID)
@@ -319,7 +319,7 @@ func (t TaskRunUserRepo) GetUserTaskSummaryDetail(ctx context.Context, userID in
 		} else {
 			// 查总任务时长
 			query1 = query1.
-				Where("status = ?", entity.TaskStatusFinished)
+				Where("task_run_users.status = ?", entity.TaskStatusFinished)
 			if userID > 0 {
 				query1 = query1.Where("user_id = ?", userID)
 			}
@@ -378,7 +378,7 @@ func (t TaskRunUserRepo) ExportTaskSummary(ctx context.Context, userID int, star
 	} else {
 		// 先查完成任务总数是否大于0
 		query = query.
-			Where("status = ?", entity.TaskStatusFinished)
+			Where("task_run_users.status = ?", entity.TaskStatusFinished)
 	}
 	if userID > 0 {
 		query = query.Where("user_id = ?", userID)
@@ -509,7 +509,7 @@ func (t TaskRunUserRepo) ExportTaskSummary(ctx context.Context, userID int, star
 		} else {
 			// 查总任务时长
 			query1 = query1.
-				Where("status = ?", userID, entity.TaskStatusFinished)
+				Where("task_run_users.status = ?", entity.TaskStatusFinished)
 			if userID > 0 {
 				query1 = query1.Where("user_id = ?", userID)
 			}
