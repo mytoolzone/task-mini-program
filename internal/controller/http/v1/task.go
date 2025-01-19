@@ -736,13 +736,20 @@ func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
 func (r taskRoutes) userSummary(ctx *gin.Context) {
 	var userID, taskID int
 	userRole := http_util.GetUserRole(ctx) //获取用户角色
-	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
-		i, err := strconv.Atoi(ctx.Query("user_id"))
-		if err == nil {
-			userID = i
-		}
+
+	i, err := strconv.Atoi(ctx.Query("user_id"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
 	} else {
-		userID = http_util.GetUserID(ctx) //非管理员查自己的数据
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
 	}
 	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
 	if err == nil {
@@ -776,13 +783,20 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 func (r taskRoutes) ExportTaskSummary(ctx *gin.Context) {
 	var userID, taskID int
 	userRole := http_util.GetUserRole(ctx) //获取用户角色
-	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
-		i, err := strconv.Atoi(ctx.Query("user_id"))
-		if err == nil {
-			userID = i
-		}
+
+	i, err := strconv.Atoi(ctx.Query("user_id"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
 	} else {
-		userID = http_util.GetUserID(ctx) //非管理员查自己的数据
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
 	}
 	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
 	if err == nil {
@@ -816,13 +830,20 @@ func (r taskRoutes) ExportTaskSummary(ctx *gin.Context) {
 func (r taskRoutes) userSummaryDetail(ctx *gin.Context) {
 	var userID, taskID int
 	userRole := http_util.GetUserRole(ctx) //获取用户角色
-	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
-		i, err := strconv.Atoi(ctx.Query("user_id"))
-		if err == nil {
-			userID = i
-		}
+
+	i, err := strconv.Atoi(ctx.Query("user_id"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
 	} else {
-		userID = http_util.GetUserID(ctx) //非管理员查自己的数据
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
 	}
 	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
 	if err == nil {
