@@ -56,6 +56,7 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorTokenNotSet:
 		statusCode = http.StatusBadRequest
 	case app_code.ErrorRepeat:
+		statusCode = http.StatusOK
 	case app_code.ErrorAuthFailed, app_code.ErrorTokenTimeout:
 		statusCode = http.StatusOK
 	}
