@@ -384,7 +384,7 @@ func (t TaskUseCase) ExportTaskSummary(ctx context.Context, userID int, startTim
 	return t.tru.ExportTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
 }
 
-func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	return t.tu.GetUserJoinTaskList(ctx, userID, status, lastID)
 }
 

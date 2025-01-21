@@ -669,7 +669,22 @@ func (r taskRoutes) userTaskList(ctx *gin.Context) {
 // @Failure     500 {object} http_util.Response
 // @Router      /task/userJoinTask [get]
 func (r taskRoutes) userJoinTask(ctx *gin.Context) {
-	userID := http_util.GetUserID(ctx)
+	var userID int
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+	i, err := strconv.Atoi(ctx.Query("userID"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
+	} else {
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
+	}
 	lastIdStr, _ := ctx.GetQuery("lastID")
 	lastId, _ := strconv.Atoi(lastIdStr)
 	status := ctx.Query("status")

@@ -92,7 +92,7 @@ type (
 		// GetTaskRunLogList 获取某个任务的记录员上传的任务记录
 		GetTaskRunLogList(ctx context.Context, taskID, lastID int) ([]entity.TaskRunLog, error)
 		// GetUserJoinTaskList 获取某个用户参与的任务
-		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error)
+		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
 		// UploadRunLog 记录员上传任务记录
 		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
 		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
@@ -168,7 +168,7 @@ type (
 		// GetUserTaskByUserID 获取任务参与者状态
 		GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetUserJoinTaskList 获取某个用户参与的任务列表
-		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error)
+		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
 		// GetTaskLeader 分配用户在任务中角色
 		GetTaskLeader(ctx context.Context, taskID int) (entity.UserTask, bool, error)
 	}

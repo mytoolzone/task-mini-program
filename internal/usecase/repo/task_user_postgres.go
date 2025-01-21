@@ -177,15 +177,26 @@ func (t UserTaskRepo) GetUserTaskByUserID(ctx context.Context, taskID, userID in
 }
 
 // GetUserJoinTaskList 获取某个人参与的任务列表
-func (t UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+func (t UserTaskRepo) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	var tasks []entity.UserTask
-	query := t.Db.WithContext(ctx).Where("user_id = ?", userID)
+	query := t.Db.WithContext(ctx).Model(&entity.UserTask{}).Where("user_id = ?", userID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	var count int64
+	err := query.Debug().Count(&count).Error
+	if err != nil {
+		return &entity.UserTaskMap{}, err
+	}
 	if lastID > 0 {
 		query = query.Where("id < ?", lastID)
 	}
-	if status != "" {
-		query = query.Where("status = ?)", status)
+	// 根据lastID分页
+	query = query.Order("id DESC").Limit(50)
+	err = query.Debug().Preload("Task").Find(&tasks).Error
+	mapRes := entity.UserTaskMap{
+		"count":    count,
+		"TaskList": tasks,
 	}
-	err := query.Debug().Preload("Task").Find(&tasks).Error
-	return tasks, err
+	return &mapRes, err
 }

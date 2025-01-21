@@ -21,6 +21,7 @@ type UserTask struct {
 	User      User      `json:"user"`
 	Task      Task      `json:"task"`
 }
+type UserTaskMap map[string]any
 
 // TableName UserTask's table name
 func (*UserTask) TableName() string {
