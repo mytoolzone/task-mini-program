@@ -1,13 +1,16 @@
 package http_util
 
 import (
+	"errors"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
+	"github.com/mytoolzone/task-mini-program/internal/entity"
 )
 
 type Response struct {
@@ -133,4 +136,25 @@ func IsImage(file *multipart.FileHeader) bool {
 	}
 
 	return false
+}
+
+// 根据用户角色判断userID是否合法
+func CheckUserID(ctx *gin.Context) (int, error) {
+	var userID int
+	userRole := GetUserRole(ctx) //获取用户角色
+	i, err := strconv.Atoi(ctx.Query("userID"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
+	} else {
+		selfuserID := GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			return 0, errors.New("非法操作")
+		}
+		return userID, nil
+	}
+	return userID, nil
 }

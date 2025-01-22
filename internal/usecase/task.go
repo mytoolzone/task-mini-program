@@ -36,7 +36,7 @@ func (t TaskUseCase) GetTaskDetail(ctx context.Context, taskID int) (entity.Task
 	return t.t.GetByTaskID(ctx, taskID)
 }
 
-func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
+func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	return t.t.GetByUserID(ctx, userID, status, lastID)
 }
 

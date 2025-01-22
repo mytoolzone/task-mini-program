@@ -78,7 +78,7 @@ type (
 		// GetTaskDetail 获取任务详情
 		GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error)
 		// GetByUserID 获取一个人参与的任务
-		GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error)
+		GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
 		// GetByTaskID 获取一个任务的详情
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		// GetTaskList 任务大厅获取任务列表
@@ -105,7 +105,7 @@ type (
 	// TaskRepo -.
 	TaskRepo interface {
 		CreateTask(context.Context, *entity.Task) error
-		GetByUserID(ctx context.Context, userID int, status string, id int) ([]entity.Task, error)
+		GetByUserID(ctx context.Context, userID int, status string, id int) (*entity.UserTaskMap, error)
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 

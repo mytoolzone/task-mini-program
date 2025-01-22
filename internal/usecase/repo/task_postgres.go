@@ -75,17 +75,29 @@ func (t *TaskRepo) CreateTask(ctx context.Context, task *entity.Task) error {
 	return nil
 }
 
-func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
+// 根据用户id查询用户发布的任务，支持分页
+func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	var tasks []entity.Task
-	query := t.Db.WithContext(ctx).Where("create_by = ?", userID)
+	query := t.Db.WithContext(ctx).Model(&entity.Task{}).Where("create_by = ?", userID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	var count int64
+	err := query.Debug().Count(&count).Error
+	if err != nil {
+		return &entity.UserTaskMap{}, err
+	}
 	if lastID > 0 {
 		query = query.Where("id < ?", lastID)
 	}
-	if status != "" {
-		query = query.Where("status = ?)", status)
+	// 根据lastID分页
+	query = query.Order("id DESC").Limit(50)
+	err = query.Debug().Find(&tasks).Error
+	mapRes := entity.UserTaskMap{
+		"count":    count,
+		"TaskList": tasks,
 	}
-	err := query.Find(&tasks).Error
-	return tasks, err
+	return &mapRes, err
 }
 
 func (t *TaskRepo) GetByTaskID(ctx context.Context, taskID int) (entity.Task, error) {
