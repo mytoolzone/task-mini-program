@@ -45,7 +45,7 @@ var CodeTypeToChineseMap = map[CodeType]string{
 	ErrorTaskNotFound:      "任务未找到",
 	ErrorUserTaskNotFound:  "用户任务未找到",
 	ErrorTaskExist:         "任务已存在",
-	ErrorBadRequest:        "请求错误",
+	ErrorBadRequest:        "请求参数错误",
 	ErrorNotImage:          "不是图片格式",
 	ErrorAuditParamInValid: "审核参数无效",
 	ErrorNotFound:          "记录未找到",

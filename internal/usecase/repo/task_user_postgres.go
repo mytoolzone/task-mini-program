@@ -56,12 +56,16 @@ func (t UserTaskRepo) AssignRole(ctx context.Context, taskID, userID int, role s
 	}
 
 	var userTask = entity.UserTask{}
-	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).First(&userTask).Error; err != nil {
+	if err := t.Db.WithContext(ctx).Debug().Where("task_id = ? and user_id = ?", taskID, userID).First(&userTask).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return app_code.New(app_code.ErrorUserTaskNotFound, "user task not found")
 		}
 		return err
 	}
+	// 需要前端校验
+	/* if userTask.Role == entity.UserTaskRoleLeader { //队长
+		return app_code.New(app_code.ErrorForbidden, "指挥官不允许变更角色")
+	} */
 	userTask.Role = role
 	userTask.TaskID = taskID
 	userTask.UserID = userID

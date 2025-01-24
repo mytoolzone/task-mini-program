@@ -50,6 +50,7 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorBadRequest:
 		statusCode = http.StatusBadRequest
 	case app_code.ErrorNotFound:
+		statusCode = http.StatusOK //200
 	case app_code.ErrorUserNotFound:
 	case app_code.ErrorTaskNotFound:
 		statusCode = http.StatusNotFound
@@ -59,9 +60,11 @@ func Error(c *gin.Context, err error) {
 	case app_code.ErrorTokenNotSet:
 		statusCode = http.StatusBadRequest
 	case app_code.ErrorRepeat:
-		statusCode = http.StatusOK
-	case app_code.ErrorAuthFailed, app_code.ErrorTokenTimeout:
-		statusCode = http.StatusOK
+		statusCode = http.StatusOK //200
+	case app_code.ErrorAuthFailed, app_code.ErrorTokenTimeout, app_code.ErrorUserTaskNotFound:
+		statusCode = http.StatusOK //200
+	case app_code.ErrorForbidden:
+		statusCode = http.StatusForbidden //403
 	}
 
 	glog.Errorf("http request code [%+v] - err %+v", appErr.Code, appErr.Message)
