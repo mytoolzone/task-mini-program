@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"errors"
+
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -114,6 +115,8 @@ func (u UserUseCase) GetSettingByUserID(ctx context.Context, userID int) (entity
 	if err != nil {
 		return entity.UserSetting{}, err
 	}
+	roleModel, err := u.GetUserRole(ctx, userID)
+	setting.SystemRole = roleModel.Role
 	return setting, nil
 }
 

@@ -4,7 +4,7 @@ package entity
 const (
 	UserRoleAdmin           = "admin"
 	UserRoleMember          = "member"
-	UserRoleCaptain         = "captain"
+	UserRoleCaptain         = "captain" //队长
 	UserRoleTaskDeployer    = "task_deployer"
 	UserRoleTaskUserAuditor = "task_user_auditor"
 )

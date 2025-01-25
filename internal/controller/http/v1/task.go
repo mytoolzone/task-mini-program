@@ -751,7 +751,7 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 		userID = i
 	}
 
-	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+	if userRole == entity.UserRoleAdmin || userRole == entity.UserRoleCaptain { //管理员可以搜索指定人员数据
 
 	} else {
 		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
