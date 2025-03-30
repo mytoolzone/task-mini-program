@@ -83,6 +83,8 @@ type (
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		// GetTaskList 任务大厅获取任务列表
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
+		// 审核人员专用得任务列表查询接口
+		GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 		// GetUserTaskRole 获取一个人在某个任务的角色
 		GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetTaskUsers 获取任务参与者列表
@@ -108,6 +110,7 @@ type (
 		GetByUserID(ctx context.Context, userID int, status string, id int) (*entity.UserTaskMap, error)
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
+		GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 
 		AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error)
 		AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error)

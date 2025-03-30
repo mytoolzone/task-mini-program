@@ -139,6 +139,27 @@ func (t *TaskRepo) GetTaskList(ctx context.Context, lastId int, keyword, status 
 	return tasks, err
 }
 
+// 审核人员专用的任务列表查询接口
+func (t *TaskRepo) GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error) {
+	var tasks []entity.Task
+	query := t.Db.Debug().WithContext(ctx).Table("tasks as t")
+	query = query.Joins("INNER JOIN task_users as tu ON tu.task_id = t.id and tu.status = ?", entity.UserTaskStatusApply)
+	if lastId > 0 {
+		query = query.Where("t.id < ?", lastId)
+	}
+	if status != "" {
+		statusArr := strings.Split(status, ",")
+		query = query.Where("t.status in(?)", statusArr)
+	}
+
+	if keyword != "" {
+		query = query.Where("t.name like ?", "%"+keyword+"%")
+	}
+	// 连接task_users，查询status=apply的任务
+
+	err := query.Group("t.id").Order("t.id desc").Find(&tasks).Error
+	return tasks, err
+}
 func (t *TaskRepo) StartTask(ctx context.Context, taskID int) error {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error

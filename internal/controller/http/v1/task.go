@@ -31,6 +31,8 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/detail", ur.detail)
 		// 获取任务列表
 		h.GET("/list", ur.list)
+		// 审核人员使用的任务列表查询接口
+		h.GET("/listByAudit", ur.listByAudit)
 		// 审核任务
 		h.POST("/auditTask", ur.auditTask)
 		// 分配参与任务人角色
@@ -173,6 +175,23 @@ func (r taskRoutes) list(ctx *gin.Context) {
 	keyword, _ := ctx.GetQuery("keyword")
 
 	list, err := r.task.GetTaskList(ctx.Request.Context(), lastID, keyword, statusStr)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, list)
+}
+func (r taskRoutes) listByAudit(ctx *gin.Context) {
+	lastIDStr, _ := ctx.GetQuery("lastID")
+	lastID, _ := strconv.Atoi(lastIDStr)
+	if lastID < 0 {
+		lastID = 0
+	}
+
+	statusStr, _ := ctx.GetQuery("status")
+	keyword, _ := ctx.GetQuery("keyword")
+
+	list, err := r.task.GetTaskListByAudit(ctx.Request.Context(), lastID, keyword, statusStr)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

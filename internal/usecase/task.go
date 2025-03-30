@@ -47,6 +47,9 @@ func (t TaskUseCase) GetByTaskID(ctx context.Context, taskID int) (entity.Task, 
 func (t TaskUseCase) GetTaskList(ctx context.Context, lastID int, keyword, status string) ([]entity.Task, error) {
 	return t.t.GetTaskList(ctx, lastID, keyword, status)
 }
+func (t TaskUseCase) GetTaskListByAudit(ctx context.Context, lastID int, keyword, status string) ([]entity.Task, error) {
+	return t.t.GetTaskListByAudit(ctx, lastID, keyword, status)
+}
 
 func (t TaskUseCase) GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
 	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, status)
