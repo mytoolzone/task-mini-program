@@ -356,14 +356,14 @@ func (t TaskUseCase) JoinTask(ctx context.Context, taskID, userID int) error {
 	return err
 }
 
-func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, status string) error {
+func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) error {
 	var err error
 	switch status {
 	case entity.UserTaskStatusAuditFail:
-		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status, remark)
 
 	case entity.UserTaskStatusAuditPass:
-		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status, remark)
 
 	default:
 		err = app_code.New(app_code.ErrorBadRequest, "arg status not valid")

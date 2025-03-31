@@ -32,7 +32,7 @@ func (t UserTaskRepo) AddUserTask(ctx context.Context, taskID, userID int) (enti
 	return UserTask, nil
 }
 
-func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error) {
+func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) (entity.UserTask, error) {
 	if status != entity.UserTaskStatusAuditFail && status != entity.UserTaskStatusAuditPass {
 		return entity.UserTask{}, app_code.New(app_code.ErrorAuditParamInValid, "status invalid")
 	}
@@ -41,6 +41,7 @@ func (t UserTaskRepo) AuditUserTask(ctx context.Context, taskID, userID int, sta
 		TaskID: taskID,
 		UserID: userID,
 		Status: status,
+		Remark: remark,
 	}
 
 	if err := t.Db.WithContext(ctx).Where("task_id = ? and user_id = ?", taskID, userID).Updates(&UserTask).Error; err != nil {

@@ -58,7 +58,7 @@ type (
 		// JoinTask 报名任务
 		JoinTask(ctx context.Context, taskID, userID int) error
 		// AuditUserTask 审核报名人员
-		AuditUserTask(ctx context.Context, taskID, userID int, status string) error
+		AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) error
 		// AssignRole 分配参加任务人员角色
 		AssignRole(ctx context.Context, taskID, userID int, role string) error
 		// PrepareTaskRun 准备开始子任务 返回子任务id 后续签到生产二维码使用 ,队长点击开始签到调用这个接口
@@ -163,7 +163,7 @@ type (
 		// AddUserTask 用户报名参与任务
 		AddUserTask(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// AuditUserTask 审核任务参与者
-		AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error)
+		AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) (entity.UserTask, error)
 		// AssignRole 分配用户在任务中角色
 		AssignRole(ctx context.Context, taskID, userID int, role string) error
 		// GetTaskUserList 获取任务参与者列表
