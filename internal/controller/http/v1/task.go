@@ -224,8 +224,10 @@ func (r taskRoutes) auditTask(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "auditStatus is required"))
 		return
 	}
+	// 任务审核备注
+	remark, _ := ctx.GetQuery("remark")
 
-	task, err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus)
+	task, err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus, remark)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

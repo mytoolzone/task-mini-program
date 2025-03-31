@@ -54,7 +54,7 @@ type (
 		// CreateTask 创建任务
 		CreateTask(context.Context, *entity.Task) error
 		// AuditTask 审核任务是否通过
-		AuditTask(ctx context.Context, taskID int, status string) (*entity.Task, error)
+		AuditTask(ctx context.Context, taskID int, status string, remark string) (*entity.Task, error)
 		// JoinTask 报名任务
 		JoinTask(ctx context.Context, taskID, userID int) error
 		// AuditUserTask 审核报名人员
@@ -112,8 +112,8 @@ type (
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 		GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 
-		AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error)
-		AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error)
+		AuditFailTask(ctx context.Context, taskID int, remark string) (*entity.Task, error)
+		AuditSuccessTask(ctx context.Context, taskID int, remark string) (*entity.Task, error)
 		StartTask(ctx context.Context, taskID int) error
 		PauseTask(ctx context.Context, taskID int) error
 		FinishTask(ctx context.Context, taskID int) error

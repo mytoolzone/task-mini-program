@@ -14,7 +14,7 @@ type TaskRepo struct {
 	*postgres.Postgres
 }
 
-func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error) {
+func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int, remark string) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
@@ -27,6 +27,7 @@ func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task,
 
 	// 任务审核失败
 	task.Status = entity.TaskStatusAuditFail
+	task.Remark = remark
 	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 	if err != nil {
 		return nil, err
@@ -34,7 +35,7 @@ func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task,
 	return &task, nil
 }
 
-func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error) {
+func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int, remark string) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
@@ -47,6 +48,7 @@ func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Ta
 
 	// 任务审核通过待执行
 	task.Status = entity.TaskStatusTorun
+	task.Remark = remark
 	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 	if err != nil {
 		return nil, err

@@ -322,15 +322,15 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 	return nil
 }
 
-func (t TaskUseCase) AuditTask(ctx context.Context, taskID int, status string) (*entity.Task, error) {
+func (t TaskUseCase) AuditTask(ctx context.Context, taskID int, status string, remark string) (*entity.Task, error) {
 	var err error
 	var task *entity.Task
 	switch status {
 	case entity.StatusAuditReject:
-		task, err = t.t.AuditFailTask(ctx, taskID)
+		task, err = t.t.AuditFailTask(ctx, taskID, remark)
 
 	case entity.StatusAuditApproved:
-		task, err = t.t.AuditSuccessTask(ctx, taskID)
+		task, err = t.t.AuditSuccessTask(ctx, taskID, remark)
 	default:
 		err = errors.New("arg status not found")
 	}
