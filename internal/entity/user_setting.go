@@ -21,6 +21,7 @@ package entity
 // UserSetting 用户的基本信息
 type UserSetting struct {
 	UserID                string      `json:"user_id"`
+	UserCode              string      `json:"user_code"` //队员编码
 	IntroUserID           string      `json:"intro_user_id"`
 	Name                  string      `json:"username"`
 	LoginName             string      `json:"login_name"`
