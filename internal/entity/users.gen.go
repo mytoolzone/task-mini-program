@@ -25,6 +25,7 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at"`
 	Openid    string         `gorm:"column:openid" json:"openid"`
 	Ext       string         `gorm:"column:ext" json:"ext"`
+	UserRoles []*UserRole    `gorm:"foreignKey:UserID;references:ID" json:"user_roles"`
 }
 
 // TableName User's table name

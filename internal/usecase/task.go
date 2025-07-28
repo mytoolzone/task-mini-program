@@ -35,6 +35,9 @@ func (t TaskUseCase) CreateTask(ctx context.Context, task *entity.Task) error {
 func (t TaskUseCase) GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error) {
 	return t.t.GetByTaskID(ctx, taskID)
 }
+func (t TaskUseCase) GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error) {
+	return t.tr.GetTaskRunDetail(ctx, taskRunID)
+}
 
 func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	return t.t.GetByUserID(ctx, userID, status, lastID)
@@ -375,8 +378,8 @@ func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, stat
 	return nil
 }
 
-func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error) {
-	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user, status string, page, page_size string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, status, page, page_size)
 }
 func (t TaskUseCase) GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
 	return t.tru.GetUserTaskSummaryDetail(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)

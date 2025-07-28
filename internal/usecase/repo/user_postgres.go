@@ -124,6 +124,6 @@ func (u *UserRepo) SetUserRole(ctx context.Context, userID int, role string) err
 // FindUsersByName 根据用户名模糊查询用户列表
 func (u *UserRepo) FindUsersByName(ctx context.Context, username string) ([]entity.User, error) {
 	var users []entity.User
-	err := u.Db.WithContext(ctx).Select("id,username,phone,email,status").Where("username like ?", "%"+username+"%").Limit(100).Find(&users).Error
+	err := u.Db.WithContext(ctx).Debug().Preload("UserRoles").Select("id,username,phone,email,status").Where("username like ?", "%"+username+"%").Limit(1000).Find(&users).Error
 	return users, err
 }

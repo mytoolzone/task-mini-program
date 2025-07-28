@@ -430,6 +430,39 @@ func (r taskRoutes) sign(ctx *gin.Context) {
 	}
 
 	userID := http_util.GetUserID(ctx)
+	// 查询该子任务是否已经完成
+	taskRun, err2 := r.task.GetTaskRunDetail(ctx.Request.Context(), taskRunID)
+	if err2 != nil {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "根据taskRunID查询子任务详情失败"))
+		return
+	}
+	if taskRun.Status == entity.TaskStatusFinished {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "该子任务已结束，无法签到"))
+		return
+	}
+	// 查询该任务状态是否是已完成
+	detail, err1 := r.task.GetTaskDetail(ctx.Request.Context(), taskID)
+	if err1 != nil {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "根据taskID查询任务详情失败"))
+		return
+	}
+	if detail.Status == entity.TaskStatusFinished {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "任务已结束，无法签到"))
+		return
+	}
+	// 查询该用户是否报名该任务
+	userTasks, _ := r.task.GetApprovedTaskUsers(ctx.Request.Context(), taskID)
+	var isJoin bool
+	for _, userTask := range userTasks {
+		if userTask.UserID == userID {
+			isJoin = true
+			break
+		}
+	}
+	if !isJoin {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "用户未报名该任务，无法签到"))
+		return
+	}
 	err := r.task.Sign(ctx.Request.Context(), taskID, taskRunID, userID)
 	if err != nil {
 		http_util.Error(ctx, err)
@@ -778,13 +811,14 @@ func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
 func (r taskRoutes) userSummary(ctx *gin.Context) {
 	var userID, taskID int
 	userRole := http_util.GetUserRole(ctx) //获取用户角色
-	userID = http_util.GetUserID(ctx)      //当前登录的用户ID
 	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
 		// 管理员支持查指定用户ID数据
 		i, err := strconv.Atoi(ctx.Query("userID"))
 		if err == nil {
 			userID = i
 		}
+	} else {
+		userID = http_util.GetUserID(ctx) //当前登录的用户ID
 	}
 	// else {
 	// 	selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
@@ -801,10 +835,10 @@ func (r taskRoutes) userSummary(ctx *gin.Context) {
 	endTime := ctx.Query("end_time")
 	taskName := ctx.Query("task_name")
 	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
+	status := ctx.Query("status")               //状态
 	page := ctx.Query("page")                   //页数
 	page_size := ctx.Query("page_size")         //分页数量
-
-	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, status, page, page_size)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return

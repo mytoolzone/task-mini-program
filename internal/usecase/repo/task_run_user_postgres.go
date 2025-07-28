@@ -82,10 +82,10 @@ func (t TaskRunUserRepo) GetTaskRunUserList(ctx context.Context, taskID int, tas
 	return taskRunUsers, err
 }
 
-func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.UserTaskSummary, error) {
+func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user, status string, page, page_size string) (entity.UserTaskSummary, error) {
 
 	var userTaskSummary entity.UserTaskSummary
-	var query, query1, query2 *gorm.DB
+	var query *gorm.DB
 	var err error
 	// 默认当天时间
 	/* if startTime == "" {
@@ -101,11 +101,12 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 		query = query.Joins("INNER JOIN tasks ON tasks.id = task_run_users.task_id").Where("tasks.name like ?", "%"+taskName+"%")
 	}
 	if startTime != "" && endTime != "" { //任务开始结束时间
-		query = query.Where("task_run_users.status = ? and task_run_users.start_at >= ? and task_run_users.finished_at <= ?", entity.TaskStatusFinished, startTime, endTime)
+		query = query.Where("task_run_users.start_at >= ? and task_run_users.finished_at <= ?", startTime, endTime)
+	}
+	if status != "" { //任务状态
+		query = query.Where("task_run_users.status = ?", status)
 	} else {
-		// 先查完成任务总数是否大于0
-		query = query.
-			Where("task_run_users.status = ?", entity.TaskStatusFinished)
+		query = query.Where("task_run_users.status in (?,?)", entity.TaskStatusFinished, entity.TaskStatusRunning)
 	}
 	if userID > 0 {
 		query = query.Where("user_id = ?", userID)
@@ -118,123 +119,78 @@ func (t TaskRunUserRepo) GetUserTaskSummary(ctx context.Context, userID int, sta
 		return entity.UserTaskSummary{}, err
 	}
 	if userTaskSummary.TotalTask > 0 {
-		query1 = t.Db.WithContext(ctx).Debug().Model(&entity.TaskRunUser{})
-		if taskName != "" { //任务标题
-			query1 = query1.Joins("INNER JOIN tasks ON tasks.id = task_run_users.task_id").Where("tasks.name like ?", "%"+taskName+"%")
-		}
-		query2 = t.Db.WithContext(ctx).Debug().Model(&entity.TaskRunUser{}).Joins("INNER JOIN tasks ON tasks.id = task_run_users.task_id")
-		if taskName != "" {
-			query2 = query2.Where("tasks.name like ?", "%"+taskName+"%")
-		}
-		if startTime != "" && endTime != "" {
-			// 查询所有任务的总时长
-			query1 = query1.
-				Where("task_run_users.status = ? and task_run_users.start_at >= ? and task_run_users.finished_at <= ?", entity.TaskStatusFinished, startTime, endTime)
-			if taskID > 0 {
-				query1 = query1.Where("task_id = ?", taskID)
-			}
-			if userID > 0 {
-				query1 = query1.Where("user_id = ?", userID)
-			}
-			err = query1.
-				Select("sum(duration) as total_duration").Scan(&userTaskSummary.TotalDuration).Error
-			if err != nil {
-				return entity.UserTaskSummary{}, err
-			}
-			// 分组查询每个任务的总时长
-			query2 = query2.Where("task_run_users.status = ? and task_run_users.start_at >= ? and task_run_users.finished_at <= ?", entity.TaskStatusFinished, startTime, endTime)
-			if taskID > 0 {
-				query2 = query2.Where("task_run_users.task_id = ?", taskID)
-			}
-			if userID > 0 { //用户ID的时候默认按照用户ID分组
-				query2 = query2.Where("task_run_users.user_id = ?", userID).
-					Group("task_run_users.task_id,user_id").
-					Select("sum(duration) as total_duration,task_id,user_id")
-			} else {
-				if is_group_user == "1" {
-					query2 = query2.
-						Group("task_run_users.task_id,user_id").
-						Select("sum(duration) as total_duration,task_id,user_id")
-				} else {
-					query2 = query2.
-						Group("task_run_users.task_id").
-						Select("sum(duration) as total_duration,task_id")
-				}
-			}
-			// id降序，分页每页20条,默认查第一页
-			if page != "" && page_size != "" {
-				// 先将page和page_size强制转int
-				page, _ := strconv.Atoi(page)
-				page_size, _ := strconv.Atoi(page_size)
-				if page > 0 && page_size > 0 {
-					query2.Order("task_run_users.task_id desc").Limit(page_size).Offset((page - 1) * page_size)
-				} else {
-					query2.Order("task_run_users.task_id desc").Limit(20)
-				}
-			} else {
-				query2.Order("task_run_users.task_id desc").Limit(20)
-			}
-			err = query2.Scan(&userTaskSummary.UserTaskSummaryList).Error
+		// 初始化查询基础
+		/* queryBase := t.Db.WithContext(ctx).Debug().Model(&entity.TaskRunUser{})
 
+		// 添加任务名称条件
+		if taskName != "" { // 任务标题
+			queryBase = queryBase.Joins("INNER JOIN tasks ON tasks.id = task_run_users.task_id").Where("tasks.name like ?", "%"+taskName+"%")
+		}
+		// 添加任务开始和结束时间条件
+		if startTime != "" && endTime != "" {
+			queryBase = queryBase.Where("task_run_users.start_at >= ? and task_run_users.finished_at <= ?", startTime, endTime)
+		}
+
+		// 添加用户ID条件
+		if userID > 0 {
+			queryBase = queryBase.Where("user_id = ?", userID)
+		}
+
+		// 添加任务ID条件
+		if taskID > 0 {
+			queryBase = queryBase.Where("task_id = ?", taskID)
+		}
+
+		// 添加任务状态条件
+		if status != "" {
+			queryBase = queryBase.Where("task_run_users.status = ?", status)
+		} else {
+			queryBase = queryBase.Where("task_run_users.status in (?,?)", entity.TaskStatusFinished, entity.TaskStatusRunning)
+		}
+
+		// 构建query1查询所有任务的总时长
+		query1 := queryBase */
+		err := query.Select("sum(duration) as total_duration").Scan(&userTaskSummary.TotalDuration).Error
+		if err != nil {
+			return entity.UserTaskSummary{}, fmt.Errorf("failed to query total duration: %w", err)
+		}
+
+		// 构建query2查询每个任务的总时长
+		query2 := query
+		if userID > 0 {
+			query2 = query2.Group("task_run_users.task_id, user_id").Select("sum(duration) as total_duration, task_id, user_id")
+		} else {
+			if is_group_user == "1" {
+				query2 = query2.Group("task_run_users.task_id, user_id").Select("sum(duration) as total_duration, task_id, user_id")
+			} else {
+				query2 = query2.Group("task_run_users.task_id").Select("sum(duration) as total_duration, task_id")
+			}
+		}
+		// 添加排序和分页条件
+		if page != "" && page_size != "" {
+			pageInt, err := strconv.Atoi(page)
 			if err != nil {
-				return entity.UserTaskSummary{}, err
+				return entity.UserTaskSummary{}, fmt.Errorf("failed to convert page to int: %w", err)
+			}
+			pageSizeInt, err := strconv.Atoi(page_size)
+			if err != nil {
+				return entity.UserTaskSummary{}, fmt.Errorf("failed to convert page_size to int: %w", err)
+			}
+
+			if pageInt > 0 && pageSizeInt > 0 {
+				query2 = query2.Order("task_run_users.task_id desc").Limit(pageSizeInt).Offset((pageInt - 1) * pageSizeInt)
+			} else {
+				query2 = query2.Order("task_run_users.task_id desc")
 			}
 		} else {
-			// 查总任务时长
-			query1 = query1.
-				Where("task_run_users.status = ?", entity.TaskStatusFinished)
-			if userID > 0 {
-				query1 = query1.Where("user_id = ?", userID)
-			}
-			if taskID > 0 {
-				query1 = query1.Where("task_id = ?", taskID)
-			}
-			err = query1.
-				Select("sum(duration) as total_duration").Scan(&userTaskSummary.TotalDuration).Error
-			if err != nil {
-				return entity.UserTaskSummary{}, err
-			}
-			// 分组查询每个任务的总时长
-			query2 = query2.
-				Where("task_run_users.status = ?", entity.TaskStatusFinished)
-			if taskID > 0 {
-				query2 = query2.Where("task_run_users.task_id = ?", taskID)
-			}
-			if userID > 0 {
-				query2 = query2.Where("task_run_users.user_id = ?", userID).
-					Group("task_run_users.task_id,user_id").
-					Select("sum(duration) as total_duration,task_id,user_id")
-			} else {
-				if is_group_user == "1" {
-					query2 = query2.
-						Group("task_run_users.task_id,user_id").
-						Select("sum(duration) as total_duration,task_id,user_id")
-				} else {
-					query2 = query2.
-						Group("task_run_users.task_id").
-						Select("sum(duration) as total_duration,task_id")
-				}
-			}
-			// id降序，分页每页20条,默认查第一页
-			if page != "" && page_size != "" {
-				// 先将page和page_size强制转int
-				page, _ := strconv.Atoi(page)
-				page_size, _ := strconv.Atoi(page_size)
-				if page > 0 && page_size > 0 {
-					query2.Order("task_run_users.task_id desc").Limit(page_size).Offset((page - 1) * page_size)
-				} else {
-					query2.Order("task_run_users.task_id desc").Limit(20)
-				}
-			} else {
-				query2.Order("task_run_users.task_id desc").Limit(20)
-			}
-			err = query2.Scan(&userTaskSummary.UserTaskSummaryList).Error
-
-			if err != nil {
-				return entity.UserTaskSummary{}, err
-			}
+			query2 = query2.Order("task_run_users.task_id desc")
+		}
+		err = query2.Scan(&userTaskSummary.UserTaskSummaryList).Error
+		if err != nil {
+			return entity.UserTaskSummary{}, fmt.Errorf("failed to scan user task summary list: %w", err)
 		}
 	}
+
 	return userTaskSummary, nil
 }
 

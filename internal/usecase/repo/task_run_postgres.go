@@ -101,3 +101,8 @@ func (t TaskRun) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskR
 	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&taskRuns).Error
 	return taskRuns, err
 }
+func (t TaskRun) GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error) {
+	var taskRun entity.TaskRun
+	err := t.Db.WithContext(ctx).Where("id = ?", taskRunID).Find(&taskRun).Error
+	return taskRun, err
+}
