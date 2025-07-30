@@ -2,11 +2,11 @@ package entity
 
 // 用户角色 管理员 一般用户
 const (
-	UserRoleAdmin           = "admin"
+	UserRoleAdmin           = "admin" //超级管理员
 	UserRoleMember          = "member"
-	UserRoleCaptain         = "captain" //队长
-	UserRoleTaskDeployer    = "task_deployer"
-	UserRoleTaskUserAuditor = "task_user_auditor"
+	UserRoleCaptain         = "captain"           //管理员
+	UserRoleTaskDeployer    = "task_deployer"     //任务管理员
+	UserRoleTaskUserAuditor = "task_user_auditor" //任务用户审核员,废弃
 )
 
 func IsValidRole(role string) bool {
@@ -50,12 +50,12 @@ const (
 	UserTaskStatusAuditPass = StatusAuditApproved
 )
 
-// 用户报名在任务中角色 队长 队员 记录员 其他
+// 用户报名在任务中指挥官 队员 记录员 其他
 const (
-	UserTaskRoleLeader   = "leader"
-	UserTaskRoleMember   = "member"
-	UserTaskRoleRecorder = "recorder"
-	UserTaskRoleSafer    = "safer" //安全员
+	UserTaskRoleLeader   = "leader"   //指挥官
+	UserTaskRoleMember   = "member"   //队员
+	UserTaskRoleRecorder = "recorder" //记录员
+	UserTaskRoleSafer    = "safer"    //安全员
 	UserTaskRoleNone     = "none"
 )
 

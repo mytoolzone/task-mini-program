@@ -41,7 +41,7 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.POST("/apply", ur.apply)
 		// 获取任务报名用户列表
 		h.GET("/applyUsers", ur.applyUserList)
-		// 审核报名
+		// 审核报名的人员
 		h.POST("/auditApplyTask", ur.auditApplyTask)
 		// 获取任务参加人列表获取某个任务，已经审核通过的人列表用在分配角色环节
 		h.GET("/approvedUsers", ur.approvedUsers)
