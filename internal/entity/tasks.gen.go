@@ -41,12 +41,13 @@ type Task struct {
 	// type 表示任务的类型·。
 	// Enum: task,post
 	// Description: 任务的类型可以task正常任务，或者是post通告。
-	Type     string `gorm:"column:type" json:"type"`
-	Leader   int    `gorm:"column:leader" json:"leader"`
-	Recorder int    `gorm:"column:recorder" json:"recorder"`
-	StartAt 	time.Time	`gorm:"column:finished_at" json:"start_at"`
-	MeetingAt 	string 	`gorm:"column:meeting_at;type:timestamp" json:"meeting_at"`
-	Contacter 	int    `gorm:"column:contacter" json:"contacter"`
+	Type             string    `gorm:"column:type" json:"type"`
+	Leader           int       `gorm:"column:leader" json:"leader"`
+	Recorder         int       `gorm:"column:recorder" json:"recorder"`
+	StartAt          time.Time `gorm:"column:finished_at" json:"start_at"`
+	MeetingAt        string    `gorm:"column:meeting_at;type:timestamp" json:"meeting_at"`
+	Contacter        int       `gorm:"column:contacter" json:"contacter"`
+	JoinPersonsCount int64     `gorm:"-" json:"join_persons_count"`
 }
 
 // TableName Task's table name

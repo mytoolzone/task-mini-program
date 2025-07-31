@@ -138,6 +138,12 @@ func (t *TaskRepo) GetTaskList(ctx context.Context, lastId int, keyword, status 
 	}
 
 	err := query.Order("id desc").Find(&tasks).Error
+	for i, task := range tasks {
+		// 查询每个任务的参与人数
+		var count int64
+		_ = t.Db.WithContext(ctx).Model(&entity.UserTask{}).Where("task_id = ? and status = ?", task.ID, entity.UserTaskStatusAuditPass).Count(&count).Error
+		tasks[i].JoinPersonsCount = count
+	}
 	return tasks, err
 }
 

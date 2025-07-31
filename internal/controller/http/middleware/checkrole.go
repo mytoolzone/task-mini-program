@@ -40,24 +40,24 @@ func CheckRole(userCase usecase.User, taskCase usecase.Task) gin.HandlerFunc {
 		}
 		http_util.SetUserRole(c, role)
 
-		// 任务角色查询
+		// 当前登录人的任务角色查询
 		var taskRole entity.UserTask
 		TaskId := c.Query("taskID")
-		UserId := c.Query("userID")
-		if TaskId == "" && UserId == "" {
+		// UserId := c.Query("userID")
+		if TaskId == "" {
 			var TaskParams struct {
 				TaskId int `json:"task_id"`
-				UserId int `json:"user_id"`
+				// UserId int `json:"user_id"`
 			}
 			if err := c.ShouldBindJSON(&TaskParams); err == nil {
-				taskRole, _ = taskCase.GetUserTaskRole(c, TaskParams.TaskId, TaskParams.UserId)
-				glog.Infof("用户%d 在任务 %d 中的角色为 %s", TaskParams.UserId, TaskParams.TaskId, taskRole.Role)
+				taskRole, _ = taskCase.GetUserTaskRole(c, TaskParams.TaskId, userID)
+				glog.Infof("用户%d 在任务 %d 中的角色为 %s", userID, TaskParams.TaskId, taskRole.Role)
 			}
 		} else {
 			taskIdInt, _ := strconv.Atoi(TaskId)
-			userIdInt, _ := strconv.Atoi(UserId)
-			taskRole, _ = taskCase.GetUserTaskRole(c, taskIdInt, userIdInt)
-			glog.Infof("用户%d 在任务 %d 中的角色为 %s", userIdInt, taskIdInt, taskRole.Role)
+			// userIdInt, _ := strconv.Atoi(UserId)
+			taskRole, _ = taskCase.GetUserTaskRole(c, taskIdInt, userID)
+			glog.Infof("用户%d 在任务 %d 中的角色为 %s", userID, taskIdInt, taskRole.Role)
 		}
 		// 判断是否需要校验权限
 		if checkRoles, ok := checkPathToRole[path]; ok {
