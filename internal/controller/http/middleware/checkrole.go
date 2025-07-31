@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
@@ -24,25 +26,44 @@ var checkPathToRole = map[string][]string{
 }
 
 // CheckRole 检查用户角色是否有权限
-func CheckRole(userCase usecase.User) gin.HandlerFunc {
+func CheckRole(userCase usecase.User, taskCase usecase.Task) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		userID := http_util.GetUserID(c)
 		var role = entity.UserRoleMember
-
+		// 系统角色
 		roleModel, err := userCase.GetUserRole(c, userID)
 		if err != nil {
 			glog.WithErr(err).Error("获取用户角色失败")
 		} else {
 			role = roleModel.Role
 		}
-
 		http_util.SetUserRole(c, role)
+
+		// 任务角色查询
+		var taskRole entity.UserTask
+		TaskId := c.Query("taskID")
+		UserId := c.Query("userID")
+		if TaskId == "" && UserId == "" {
+			var TaskParams struct {
+				TaskId int `json:"task_id"`
+				UserId int `json:"user_id"`
+			}
+			if err := c.ShouldBindJSON(&TaskParams); err == nil {
+				taskRole, _ = taskCase.GetUserTaskRole(c, TaskParams.TaskId, TaskParams.UserId)
+				glog.Infof("用户%d 在任务 %d 中的角色为 %s", TaskParams.UserId, TaskParams.TaskId, taskRole.Role)
+			}
+		} else {
+			taskIdInt, _ := strconv.Atoi(TaskId)
+			userIdInt, _ := strconv.Atoi(UserId)
+			taskRole, _ = taskCase.GetUserTaskRole(c, taskIdInt, userIdInt)
+			glog.Infof("用户%d 在任务 %d 中的角色为 %s", userIdInt, taskIdInt, taskRole.Role)
+		}
 		// 判断是否需要校验权限
 		if checkRoles, ok := checkPathToRole[path]; ok {
 			// 校验用户角色是否在允许的角色列表中
-			if !stringInSlice(role, checkRoles) {
-				http_util.Error(c, app_code.New(app_code.ErrorForbidden, "没有权限"))
+			if !stringInSlice(role, checkRoles) && !stringInSlice(taskRole.Role, checkRoles) {
+				http_util.Error(c, app_code.New(app_code.ErrorForbidden, "系统角色为"+role+"/任务角色为"+taskRole.Role+"，没有权限访问"))
 				return
 			} else {
 				c.Next()

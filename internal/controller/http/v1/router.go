@@ -43,7 +43,7 @@ func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk useca
 	// Routers
 	hl := handler.Group("/v1")
 	jwt := middleware.JWT(auth)
-	checkRole := middleware.CheckRole(u)
+	checkRole := middleware.CheckRole(u, tk)
 
 	{
 		newTaskRoutes(hl, jwt, checkRole, tk, n)
