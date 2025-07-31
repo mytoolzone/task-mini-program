@@ -1,13 +1,16 @@
 package http_util
 
 import (
+	"errors"
 	"mime/multipart"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
+	"github.com/mytoolzone/task-mini-program/internal/entity"
 )
 
 type Response struct {
@@ -31,6 +34,7 @@ func Success(ctx *gin.Context, data interface{}) {
 
 func Error(c *gin.Context, err error) {
 	appErr, ok := err.(*app_code.AppError)
+	// fmt.Printf("appErr: %#v", appErr.Code)
 	if !ok {
 		glog.Errorf("http request error %+v", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, Response{
@@ -41,24 +45,32 @@ func Error(c *gin.Context, err error) {
 	}
 
 	statusCode := http.StatusInternalServerError
+	// 匹配code转成httpcode编码
 	switch appErr.Code {
 	case app_code.ErrorBadRequest:
 		statusCode = http.StatusBadRequest
 	case app_code.ErrorNotFound:
+		statusCode = http.StatusOK //200
 	case app_code.ErrorUserNotFound:
 	case app_code.ErrorTaskNotFound:
 		statusCode = http.StatusNotFound
 	case app_code.ErrorTaskExist:
 	case app_code.ErrorUserExist:
 		statusCode = http.StatusConflict
+	case app_code.ErrorTokenNotSet:
+		statusCode = http.StatusBadRequest
 	case app_code.ErrorRepeat:
-		statusCode = http.StatusOK
+		statusCode = http.StatusOK //200
+	case app_code.ErrorAuthFailed, app_code.ErrorTokenTimeout, app_code.ErrorUserTaskNotFound:
+		statusCode = http.StatusOK //200
+	case app_code.ErrorForbidden:
+		statusCode = http.StatusForbidden //403
 	}
 
 	glog.Errorf("http request code [%+v] - err %+v", appErr.Code, appErr.Message)
 	c.AbortWithStatusJSON(statusCode, Response{
-		Error: appErr.Message,
 		Code:  appErr.Code,
+		Error: appErr.Message,
 	})
 	return
 }
@@ -127,4 +139,25 @@ func IsImage(file *multipart.FileHeader) bool {
 	}
 
 	return false
+}
+
+// 根据用户角色判断userID是否合法
+func CheckUserID(ctx *gin.Context) (int, error) {
+	var userID int
+	userRole := GetUserRole(ctx) //获取用户角色
+	i, err := strconv.Atoi(ctx.Query("userID"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
+	} else {
+		selfuserID := GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			return 0, errors.New("非法操作")
+		}
+		return userID, nil
+	}
+	return userID, nil
 }

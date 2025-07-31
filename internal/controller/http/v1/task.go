@@ -1,14 +1,18 @@
 package v1
 
 import (
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
-	"strconv"
-	"strings"
+	"gorm.io/gorm"
 )
 
 type taskRoutes struct {
@@ -27,6 +31,8 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.GET("/detail", ur.detail)
 		// 获取任务列表
 		h.GET("/list", ur.list)
+		// 审核人员使用的任务列表查询接口
+		h.GET("/listByAudit", ur.listByAudit)
 		// 审核任务
 		h.POST("/auditTask", ur.auditTask)
 		// 分配参与任务人角色
@@ -35,8 +41,14 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.POST("/apply", ur.apply)
 		// 获取任务报名用户列表
 		h.GET("/applyUsers", ur.applyUserList)
-		// 审核报名
+		// 审核报名的人员
 		h.POST("/auditApplyTask", ur.auditApplyTask)
+		// 获取任务参加人列表获取某个任务，已经审核通过的人列表用在分配角色环节
+		h.GET("/approvedUsers", ur.approvedUsers)
+		// 获取当前访问用户的角色
+		h.GET("/currentUserRole", ur.currentUserRole)
+		// 获取当前用户在任务的详情
+		h.GET("/userTask", ur.userTask)
 		// 获取签到二维码
 		h.GET("/prepare", ur.prepare)
 		// 签到
@@ -53,14 +65,19 @@ func newTaskRoutes(handler *gin.RouterGroup, auth gin.HandlerFunc, role gin.Hand
 		h.POST("/uploadRunLog", ur.uploadRunLog)
 		// 获取任务运行日志列表
 		h.GET("/runLogs", ur.runLogList)
-		// 获取任务用户列表
+		// 获取任务用户列表 全任务周期
 		h.GET("/users", ur.userList)
 		// 获取某人创建的任务列表
 		h.GET("/userTasks", ur.userTaskList)
-		// 获取某个人参加的任务
+		// 获取某个人参加的任务，支持分页，每页50条
 		h.GET("/userJoinTask", ur.userJoinTask)
-		// 获取某个用户的统计数据
+		// 工时统计查询列表
 		h.GET("/userSummary", ur.userSummary)
+		// 工时导出查询列表
+		h.GET("/ExportTaskSummary", ur.ExportTaskSummary)
+		// 工时统计查询详情
+		h.GET("/userSummaryDetail", ur.userSummaryDetail)
+
 	}
 }
 
@@ -93,6 +110,9 @@ func (r taskRoutes) create(ctx *gin.Context) {
 
 	task.CreateBy = http_util.GetUserID(ctx)
 	task.Status = entity.TaskStatusNew
+	if task.Type == "" {
+		task.Type = entity.TaskTypeTask
+	}
 	err := r.task.CreateTask(ctx.Request.Context(), &task)
 	if err != nil {
 		http_util.Error(ctx, app_code.WithError(app_code.ErrorCreateTask, err))
@@ -161,6 +181,23 @@ func (r taskRoutes) list(ctx *gin.Context) {
 	}
 	http_util.Success(ctx, list)
 }
+func (r taskRoutes) listByAudit(ctx *gin.Context) {
+	lastIDStr, _ := ctx.GetQuery("lastID")
+	lastID, _ := strconv.Atoi(lastIDStr)
+	if lastID < 0 {
+		lastID = 0
+	}
+
+	statusStr, _ := ctx.GetQuery("status")
+	keyword, _ := ctx.GetQuery("keyword")
+
+	list, err := r.task.GetTaskListByAudit(ctx.Request.Context(), lastID, keyword, statusStr)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, list)
+}
 
 // @Summary     Audit task
 // @Description 管理员审核任务
@@ -187,8 +224,10 @@ func (r taskRoutes) auditTask(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "auditStatus is required"))
 		return
 	}
+	// 任务审核备注
+	remark, _ := ctx.GetQuery("remark")
 
-	task, err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus)
+	task, err := r.task.AuditTask(ctx.Request.Context(), taskID, auditStatus, remark)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -320,8 +359,10 @@ func (r taskRoutes) auditApplyTask(ctx *gin.Context) {
 		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "auditStatus is required"))
 		return
 	}
+	// 审核人员备注
+	remark, _ := ctx.GetQuery("remark")
 
-	err := r.task.AuditUserTask(ctx.Request.Context(), taskID, userID, auditStatus)
+	err := r.task.AuditUserTask(ctx.Request.Context(), taskID, userID, auditStatus, remark)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -389,6 +430,39 @@ func (r taskRoutes) sign(ctx *gin.Context) {
 	}
 
 	userID := http_util.GetUserID(ctx)
+	// 查询该子任务是否已经完成
+	taskRun, err2 := r.task.GetTaskRunDetail(ctx.Request.Context(), taskRunID)
+	if err2 != nil {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "根据taskRunID查询子任务详情失败"))
+		return
+	}
+	if taskRun.Status == entity.TaskStatusFinished {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "该子任务已结束，无法签到"))
+		return
+	}
+	// 查询该任务状态是否是已完成
+	detail, err1 := r.task.GetTaskDetail(ctx.Request.Context(), taskID)
+	if err1 != nil {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "根据taskID查询任务详情失败"))
+		return
+	}
+	if detail.Status == entity.TaskStatusFinished {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "任务已结束，无法签到"))
+		return
+	}
+	// 查询该用户是否报名该任务
+	userTasks, _ := r.task.GetApprovedTaskUsers(ctx.Request.Context(), taskID)
+	var isJoin bool
+	for _, userTask := range userTasks {
+		if userTask.UserID == userID {
+			isJoin = true
+			break
+		}
+	}
+	if !isJoin {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "用户未报名该任务，无法签到"))
+		return
+	}
 	err := r.task.Sign(ctx.Request.Context(), taskID, taskRunID, userID)
 	if err != nil {
 		http_util.Error(ctx, err)
@@ -570,7 +644,7 @@ func (r taskRoutes) userList(ctx *gin.Context) {
 
 	status := ctx.Query("status")
 
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, status)
+	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, status)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -599,7 +673,7 @@ func (r taskRoutes) applyUserList(ctx *gin.Context) {
 		return
 	}
 
-	userTasks, err := r.task.GetUserTasks(ctx.Request.Context(), taskID, entity.UserTaskStatusApply)
+	userTasks, err := r.task.GetTaskUsers(ctx.Request.Context(), taskID, entity.UserTaskStatusApply)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
@@ -623,7 +697,12 @@ func (r taskRoutes) applyUserList(ctx *gin.Context) {
 // @Failure     500 {object} http_util.Response
 // @Router      /task/userTasks [get]
 func (r taskRoutes) userTaskList(ctx *gin.Context) {
-	userID := http_util.GetUserID(ctx)
+	// userID := http_util.GetUserID(ctx)
+	userID, err1 := http_util.CheckUserID(ctx)
+	if err1 != nil {
+		http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		return
+	}
 	lastIdStr, _ := ctx.GetQuery("lastID")
 	lastId, _ := strconv.Atoi(lastIdStr)
 	status := ctx.Query("status")
@@ -651,7 +730,21 @@ func (r taskRoutes) userTaskList(ctx *gin.Context) {
 // @Failure     500 {object} http_util.Response
 // @Router      /task/userJoinTask [get]
 func (r taskRoutes) userJoinTask(ctx *gin.Context) {
-	userID := http_util.GetUserID(ctx)
+	// userID, err1 := http_util.CheckUserID(ctx)
+	// if err1 != nil {
+	// http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+	// 	return
+	// }
+	// var userID int
+	var userRole string
+	userID := http_util.GetUserID(ctx)    //当前登录的用户ID
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+		// 管理员支持查指定用户ID数据
+		i, err := strconv.Atoi(ctx.Query("userID"))
+		if err == nil {
+			userID = i
+		}
+	}
 	lastIdStr, _ := ctx.GetQuery("lastID")
 	lastId, _ := strconv.Atoi(lastIdStr)
 	status := ctx.Query("status")
@@ -716,13 +809,231 @@ func (r taskRoutes) uploadRunLog(ctx *gin.Context) {
 // @Param       userID query int true "userID"
 // @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
 func (r taskRoutes) userSummary(ctx *gin.Context) {
-	userID := http_util.GetUserID(ctx)
-
-	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID)
+	var userID, taskID int
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+	if userRole == entity.UserRoleAdmin {  //管理员可以搜索指定人员数据
+		// 管理员支持查指定用户ID数据
+		i, err := strconv.Atoi(ctx.Query("userID"))
+		if err == nil {
+			userID = i
+		}
+	} else {
+		userID = http_util.GetUserID(ctx) //当前登录的用户ID
+	}
+	// else {
+	// 	selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+	// 	if selfuserID != userID {
+	// 		http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+	// 	}
+	// 	return
+	// }
+	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
+	if err == nil {
+		taskID = j
+	}
+	startTime := ctx.Query("start_time")
+	endTime := ctx.Query("end_time")
+	taskName := ctx.Query("task_name")
+	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
+	status := ctx.Query("status")               //状态
+	page := ctx.Query("page")                   //页数
+	page_size := ctx.Query("page_size")         //分页数量
+	summary, err := r.task.GetUserTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, status, page, page_size)
 	if err != nil {
 		http_util.Error(ctx, err)
 		return
 	}
 
 	http_util.Success(ctx, summary)
+}
+
+// @Summary     User summary
+// @Description 导出任务工时
+// @ID          user-summary
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       userID query int true "userID"
+// @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
+func (r taskRoutes) ExportTaskSummary(ctx *gin.Context) {
+	var userID, taskID int
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+
+	i, err := strconv.Atoi(ctx.Query("user_id"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
+	} else {
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
+	}
+	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
+	if err == nil {
+		taskID = j
+	}
+	startTime := ctx.Query("start_time")
+	endTime := ctx.Query("end_time")
+	taskName := ctx.Query("task_name")
+	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
+	page := ctx.Query("page")                   //页数
+	page_size := ctx.Query("page_size")         //分页数量
+
+	summary, err := r.task.ExportTaskSummary(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+
+	http_util.Success(ctx, summary)
+}
+
+// @Summary     User userSummaryDetail
+// @Description 获取某个用户的统计数据
+// @ID          user-userSummaryDetail
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       userID query int true "userID"
+// @Success     200 {object} http_util.Response{data=entity.UserTaskSummary}
+func (r taskRoutes) userSummaryDetail(ctx *gin.Context) {
+	var userID, taskID int
+	userRole := http_util.GetUserRole(ctx) //获取用户角色
+
+	i, err := strconv.Atoi(ctx.Query("user_id"))
+	if err == nil {
+		userID = i
+	}
+
+	if userRole == entity.UserRoleAdmin { //管理员可以搜索指定人员数据
+
+	} else {
+		selfuserID := http_util.GetUserID(ctx) //非管理员查自己的数据
+		if selfuserID != userID {
+			http_util.Error(ctx, app_code.WithError(app_code.ErrorBadRequest, errors.New("非管理员只能查看自己的统计数据哦！")))
+		}
+		return
+	}
+	j, err := strconv.Atoi(ctx.Query("task_id")) //任务ID
+	if err == nil {
+		taskID = j
+	}
+	startTime := ctx.Query("start_time")
+	endTime := ctx.Query("end_time")
+	taskName := ctx.Query("task_name")
+	is_group_user := ctx.Query("is_group_user") //是否按照用户ID分组，默认按照任务ID分组
+	fmt.Printf("startTime %#v,endTime %#v,userole %#v,taskid %#v\n", startTime, endTime, userRole, taskID)
+
+	summary, err := r.task.GetUserTaskSummaryDetail(ctx.Request.Context(), userID, startTime, endTime, taskID, taskName, is_group_user)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+
+	http_util.Success(ctx, summary)
+}
+
+// @Summary     currentUserRole
+// @Description 获取当前访问用户在某个任务的角色
+// @ID          currentUserRole
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/currentUserRole [get]
+func (r taskRoutes) currentUserRole(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userID := http_util.GetUserID(ctx)
+
+	userTask, err := r.task.GetUserTaskRole(ctx.Request.Context(), taskID, userID)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, userTask)
+}
+
+// userTask
+// @Summary     userTask
+// @Description 获取当前访问用户在某个任务的详情
+// @ID          userTask
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/userTask [get]
+func (r taskRoutes) userTask(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+	// 用户ID不传取登录的，传了按照传的为准
+	userID := http_util.GetUserID(ctx)
+	usertmp, _ := ctx.GetQuery("userID")
+	if usertmp != "" {
+		userID, _ = strconv.Atoi(usertmp)
+	}
+
+	userTask, err := r.task.GetUserTaskRole(ctx.Request.Context(), taskID, userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			http_util.Success(ctx, userTask)
+			return
+		}
+		http_util.Error(ctx, err)
+		return
+	}
+	http_util.Success(ctx, userTask)
+}
+
+// @Summary     approvedUsers list
+// @Description 获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）
+// @ID          approvedUsers-list
+// @Tags  	    task
+// @Accept      json
+// @Produce     json
+// @Param Authorization header string true "jwt_token"
+// @Param       taskID query int true "taskID"
+// @Success     200 {object} http_util.Response{data=[]entity.UserTask}
+// @Failure     400 {object} http_util.Response
+// @Failure     500 {object} http_util.Response
+// @Router      /task/approvedUsers [get]
+func (r taskRoutes) approvedUsers(ctx *gin.Context) {
+	taskIDStr, _ := ctx.GetQuery("taskID")
+	taskID, _ := strconv.Atoi(taskIDStr)
+	if taskID <= 0 {
+		http_util.Error(ctx, app_code.New(app_code.ErrorBadRequest, "taskID is required"))
+		return
+	}
+
+	userTasks, err := r.task.GetApprovedTaskUsers(ctx.Request.Context(), taskID)
+	if err != nil {
+		http_util.Error(ctx, err)
+		return
+	}
+
+	http_util.Success(ctx, userTasks)
 }

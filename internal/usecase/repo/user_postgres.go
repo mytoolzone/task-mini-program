@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
 	"gorm.io/gorm"
@@ -63,6 +64,9 @@ func (u *UserRepo) UpdateUserSetting(ctx context.Context, userID int, setting en
 		return err
 	}
 	user.Ext = string(data)
+	user.Username = setting.Name
+	user.Phone = setting.Phone
+	user.Email = setting.Email
 
 	if err := u.Db.WithContext(ctx).Where("id = ?", userID).Updates(&user).Error; err != nil {
 		return err
@@ -95,4 +99,31 @@ func (u *UserRepo) GetUserRole(ctx context.Context, userID int) (entity.UserRole
 		return entity.UserRole{}, err
 	}
 	return userRole, nil
+}
+
+// SetUserRole 设置或者更新用户的角色
+func (u *UserRepo) SetUserRole(ctx context.Context, userID int, role string) error {
+	var userRole entity.UserRole
+	err := u.Db.WithContext(ctx).Where("user_id =?", userID).First(&userRole).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		userRole = entity.UserRole{
+			UserID: userID,
+			Role:   role,
+		}
+		err = u.Db.WithContext(ctx).Create(&userRole).Error
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+	userRole.Role = role
+	return u.Db.WithContext(ctx).Model(&userRole).Updates(&userRole).Error
+}
+
+// FindUsersByName 根据用户名模糊查询用户列表
+func (u *UserRepo) FindUsersByName(ctx context.Context, username string) ([]entity.User, error) {
+	var users []entity.User
+	err := u.Db.WithContext(ctx).Debug().Preload("UserRoles").Select("id,username,phone,email,status").Where("username like ?", "%"+username+"%").Limit(1000).Find(&users).Error
+	return users, err
 }

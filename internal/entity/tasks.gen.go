@@ -17,19 +17,37 @@ import (
 
 const TableNameTask = "tasks"
 
+const (
+	TaskTypeTask = "task"
+	TaskTypePost = "post"
+)
+
 // Task mapped from table <tasks>
 type Task struct {
-	ID         int            `gorm:"column:id;primaryKey;autoIncrement:true" json:"id" `
-	Name       string         `gorm:"column:name;not null" json:"name"`
-	CreateBy   int            `gorm:"column:create_by" json:"create_by"`
-	CreatedAt  time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt  time.Time      `gorm:"column:updated_at" json:"updated_at" swaggerignore:"true"`
-	FinishedAt time.Time      `gorm:"column:finished_at" json:"finished_at" `
-	DeletedAt  gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" swaggerignore:"true"`
-	Describe   string         `gorm:"column:describe" json:"describe"`
-	Require    string         `gorm:"column:require" json:"require"`
-	Location   string         `gorm:"column:location" json:"location"`
-	Status     string         `gorm:"column:status" json:"status"`
+	ID           int            `gorm:"column:id;primaryKey;autoIncrement:true" json:"id" `
+	Name         string         `gorm:"column:name;not null" json:"name"`
+	CreateBy     int            `gorm:"column:create_by" json:"create_by"`
+	CreatedAt    time.Time      `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt    time.Time      `gorm:"column:updated_at" json:"updated_at" swaggerignore:"true"`
+	FinishedAt   time.Time      `gorm:"column:finished_at" json:"finished_at" `
+	DeletedAt    gorm.DeletedAt `gorm:"column:deleted_at" json:"deleted_at" swaggerignore:"true"`
+	Describe     string         `gorm:"column:describe" json:"describe"`
+	Require      string         `gorm:"column:require" json:"require"`
+	Location     string         `gorm:"column:location" json:"location"`
+	MaxUserCount int            `gorm:"column:max_user_count" json:"max_user_count"`
+	Status       string         `gorm:"column:status" json:"status"`
+	Images       string         `gorm:"column:images" json:"images"`
+	Remark       string         `gorm:"column:remark" json:"remark"`
+	// type 表示任务的类型·。
+	// Enum: task,post
+	// Description: 任务的类型可以task正常任务，或者是post通告。
+	Type             string    `gorm:"column:type" json:"type"`
+	Leader           int       `gorm:"column:leader" json:"leader"`
+	Recorder         int       `gorm:"column:recorder" json:"recorder"`
+	StartAt          time.Time `gorm:"column:finished_at" json:"start_at"`
+	MeetingAt        string    `gorm:"column:meeting_at;type:timestamp" json:"meeting_at"`
+	Contacter        int       `gorm:"column:contacter" json:"contacter"`
+	JoinPersonsCount int64     `gorm:"-" json:"join_persons_count"`
 }
 
 // TableName Task's table name

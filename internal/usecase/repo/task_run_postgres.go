@@ -3,10 +3,11 @@ package repo
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
 	"gorm.io/gorm"
-	"time"
 )
 
 type TaskRun struct {
@@ -42,6 +43,17 @@ func (t TaskRun) GetPendingTaskRun(ctx context.Context, taskID int) (entity.Task
 	return taskRun, nil
 }
 
+func (t TaskRun) GetTaskLatestRun(ctx context.Context, taskID int) (entity.TaskRun, error) {
+	var taskRun entity.TaskRun
+	err := t.Db.WithContext(ctx).Where("task_id = ?",
+		taskID).Order("id desc").First(&taskRun).Error
+	if err != nil {
+		return entity.TaskRun{}, err
+	}
+
+	return taskRun, nil
+}
+
 func (t TaskRun) GetRunningTaskRun(ctx context.Context, taskID int) (entity.TaskRun, error) {
 	var taskRun entity.TaskRun
 	err := t.Db.WithContext(ctx).Where("task_id = ? and status = ?", taskID, entity.TaskStatusRunning).First(&taskRun).Error
@@ -70,6 +82,7 @@ func (t TaskRun) FinishTaskRun(ctx context.Context, taskID int) error {
 		return err
 	}
 	taskRun.Status = entity.TaskStatusFinished
+	taskRun.Endat = time.Now()
 	return t.Db.WithContext(ctx).Where("task_id = ?", taskID).Updates(&taskRun).Error
 }
 
@@ -87,4 +100,9 @@ func (t TaskRun) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskR
 	var taskRuns []entity.TaskRun
 	err := t.Db.WithContext(ctx).Where("task_id = ?", taskID).Find(&taskRuns).Error
 	return taskRuns, err
+}
+func (t TaskRun) GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error) {
+	var taskRun entity.TaskRun
+	err := t.Db.WithContext(ctx).Where("id = ?", taskRunID).Find(&taskRun).Error
+	return taskRun, err
 }

@@ -18,9 +18,11 @@ type UserTask struct {
 	CreatedAt time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`
 	Status    string    `gorm:"column:status" json:"status"`
 	Role      string    `gorm:"column:role" json:"role"`
+	Remark    string    `gorm:"column:remark" json:"remark"`
 	User      User      `json:"user"`
 	Task      Task      `json:"task"`
 }
+type UserTaskMap map[string]any
 
 // TableName UserTask's table name
 func (*UserTask) TableName() string {

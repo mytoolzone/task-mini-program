@@ -33,7 +33,7 @@ func Run(cfg *config.Config) {
 	defer pg.Close()
 
 	wxApp := wechat.NewMiniProgram(cfg.WeChat.AppID, cfg.WeChat.AppSecret)
-	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg), wxApp)
+	userUseCase := usecase.NewUserUseCase(repo.NewUserRepo(pg), repo.NewInsuranceRepo(pg), wxApp)
 	noticeUseCase := usecase.NewNoticeUseCase(repo.NewNoticeRepo(pg))
 	taskUseCase := usecase.NewTaskUseCase(repo.NewTaskRepo(pg), repo.NewTaskRunRepo(pg), repo.NewTaskRunUserRepo(pg), repo.NewTaskRunLogRepo(pg), repo.NewUserTaskRepo(pg))
 	fileUseCase := usecase.NewFileUseCase(cfg.File.RootDir)

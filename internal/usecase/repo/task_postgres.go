@@ -2,17 +2,19 @@ package repo
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
 	"github.com/mytoolzone/task-mini-program/pkg/postgres"
-	"strings"
 )
 
 type TaskRepo struct {
 	*postgres.Postgres
 }
 
-func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error) {
+func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int, remark string) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
@@ -25,6 +27,7 @@ func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task,
 
 	// 任务审核失败
 	task.Status = entity.TaskStatusAuditFail
+	task.Remark = remark
 	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 	if err != nil {
 		return nil, err
@@ -32,7 +35,7 @@ func (t *TaskRepo) AuditFailTask(ctx context.Context, taskID int) (*entity.Task,
 	return &task, nil
 }
 
-func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error) {
+func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int, remark string) (*entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
 	if err != nil {
@@ -45,6 +48,7 @@ func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Ta
 
 	// 任务审核通过待执行
 	task.Status = entity.TaskStatusTorun
+	task.Remark = remark
 	err = t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 	if err != nil {
 		return nil, err
@@ -53,25 +57,66 @@ func (t *TaskRepo) AuditSuccessTask(ctx context.Context, taskID int) (*entity.Ta
 }
 
 func (t *TaskRepo) CreateTask(ctx context.Context, task *entity.Task) error {
-	return t.Db.Create(task).Error
+	var err error
+	if err = t.Db.Create(task).Error; err != nil {
+		return err
+	}
+	if task.Leader > 0 {
+		// 新增队长
+		err = t.Db.Create(&entity.UserTask{
+			TaskID:    task.ID,
+			UserID:    task.Leader, //队长ID
+			Role:      entity.UserTaskRoleLeader,
+			Status:    entity.UserTaskStatusAuditPass,
+			CreatedAt: time.Now(),
+		}).Error
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
+// 根据用户id查询用户发布的任务，支持分页
+func (t *TaskRepo) GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	var tasks []entity.Task
-	query := t.Db.WithContext(ctx).Where("create_by = ?", userID)
+	query := t.Db.WithContext(ctx).Model(&entity.Task{}).Where("create_by = ?", userID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	var count int64
+	err := query.Debug().Count(&count).Error
+	if err != nil {
+		return &entity.UserTaskMap{}, err
+	}
 	if lastID > 0 {
 		query = query.Where("id < ?", lastID)
 	}
-	if status != "" {
-		query = query.Where("status = ?)", status)
+	// 根据lastID分页
+	query = query.Order("id DESC").Limit(50)
+	err = query.Debug().Find(&tasks).Error
+	mapRes := entity.UserTaskMap{
+		"count":    count,
+		"TaskList": tasks,
 	}
-	err := query.Find(&tasks).Error
-	return tasks, err
+	return &mapRes, err
 }
 
 func (t *TaskRepo) GetByTaskID(ctx context.Context, taskID int) (entity.Task, error) {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
+	// 查询第一条子任务的开始时间
+	if err == nil {
+		var taskRun entity.TaskRun
+		_ = t.Db.WithContext(ctx).Where("task_id = ?", taskID).Order("id asc").First(&taskRun).Error
+		task.StartAt = taskRun.StartAt
+	}
+	// 查询最后一条子任务是结束状态的结束时间
+	if err == nil {
+		var taskRun entity.TaskRun
+		_ = t.Db.WithContext(ctx).Where("task_id = ?", taskID).Where("status = ?", entity.TaskStatusFinished).Order("id desc").First(&taskRun).Error
+		task.FinishedAt = taskRun.Endat
+	}
 	return task, err
 }
 
@@ -93,9 +138,36 @@ func (t *TaskRepo) GetTaskList(ctx context.Context, lastId int, keyword, status 
 	}
 
 	err := query.Order("id desc").Find(&tasks).Error
+	for i, task := range tasks {
+		// 查询每个任务的参与人数
+		var count int64
+		_ = t.Db.WithContext(ctx).Model(&entity.UserTask{}).Where("task_id = ? and status = ?", task.ID, entity.UserTaskStatusAuditPass).Count(&count).Error
+		tasks[i].JoinPersonsCount = count
+	}
 	return tasks, err
 }
 
+// 审核人员专用的任务列表查询接口
+func (t *TaskRepo) GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error) {
+	var tasks []entity.Task
+	query := t.Db.Debug().WithContext(ctx).Table("tasks as t")
+	query = query.Joins("INNER JOIN task_users as tu ON tu.task_id = t.id and tu.status = ?", entity.UserTaskStatusApply)
+	if lastId > 0 {
+		query = query.Where("t.id < ?", lastId)
+	}
+	if status != "" {
+		statusArr := strings.Split(status, ",")
+		query = query.Where("t.status in(?)", statusArr)
+	}
+
+	if keyword != "" {
+		query = query.Where("t.name like ?", "%"+keyword+"%")
+	}
+	// 连接task_users，查询status=apply的任务
+
+	err := query.Group("t.id").Order("t.id desc").Find(&tasks).Error
+	return tasks, err
+}
 func (t *TaskRepo) StartTask(ctx context.Context, taskID int) error {
 	var task entity.Task
 	err := t.Db.WithContext(ctx).Where("id = ?", taskID).First(&task).Error
@@ -123,6 +195,7 @@ func (t *TaskRepo) FinishTask(ctx context.Context, taskID int) error {
 		return err
 	}
 	task.Status = entity.TaskStatusFinished
+	task.FinishedAt = time.Now()
 	return t.Db.WithContext(ctx).Where("id = ?", taskID).Updates(&task).Error
 }
 

@@ -6,7 +6,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "task.mytool.zone",
+    "host": "m.yllt.cc",
     "basePath": "/v1",
     "paths": {
         "/file/upload": {
@@ -222,6 +222,73 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/approvedUsers": {
+            "get": {
+                "description": "获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "approvedUsers list",
+                "operationId": "approvedUsers-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taskID",
+                        "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entity.UserTask"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -534,6 +601,70 @@
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/entity.Task"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/task/currentUserRole": {
+            "get": {
+                "description": "获取当前访问用户在某个任务的角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "currentUserRole",
+                "operationId": "currentUserRole",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taskID",
+                        "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.UserTask"
                                         }
                                     }
                                 }
@@ -1187,6 +1318,70 @@
                 }
             }
         },
+        "/task/userTask": {
+            "get": {
+                "description": "获取当前访问用户在某个任务的详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "userTask",
+                "operationId": "userTask",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taskID",
+                        "name": "taskID",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.UserTask"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/task/userTasks": {
             "get": {
                 "description": "获取某人创建的任务列表",
@@ -1333,6 +1528,133 @@
                 }
             }
         },
+        "/user/addUserInsurance": {
+            "post": {
+                "description": "添加用户保险",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "添加用户保险",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "json",
+                        "name": "param",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Insurance"
+                        }
+                    },
+                    {
+                        "description": "insurance",
+                        "name": "insurance",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.Insurance"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/findUsers": {
+            "get": {
+                "description": "查询用户列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "查询用户列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entity.User"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/getSetting": {
             "get": {
                 "description": "获取用户设置",
@@ -1352,6 +1674,69 @@
                         "description": "jwt_token",
                         "name": "Authorization",
                         "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/http_util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entity.UserSetting"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/getSettingByUserID": {
+            "get": {
+                "description": "通过userID获取用户设置",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "通过userID获取用户设置",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1563,6 +1948,71 @@
                 }
             }
         },
+        "/user/setUserRole": {
+            "post": {
+                "description": "管理员通过userID设置用户角色",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "管理员设置用户的角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "jwt_token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "captain",
+                            "member",
+                            "task_deployer",
+                            "task_user_auditor",
+                            "admin"
+                        ],
+                        "type": "string",
+                        "description": "role",
+                        "name": "role",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http_util.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/user/updateSetting": {
             "post": {
                 "description": "更新用户设置",
@@ -1623,6 +2073,7 @@
             "enum": [
                 "success",
                 "user_not_found",
+                "find_user_list",
                 "password_error",
                 "service_error",
                 "auth_failed",
@@ -1646,6 +2097,7 @@
             "x-enum-varnames": [
                 "Success",
                 "ErrorUserNotFound",
+                "ErrorGetUserList",
                 "ErrorUserPassword",
                 "ErrorServerError",
                 "ErrorAuthFailed",
@@ -1666,6 +2118,29 @@
                 "ErrorTaskRunNotFound",
                 "ErrorCreateTask"
             ]
+        },
+        "entity.Insurance": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "end_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "start_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
         },
         "entity.Notice": {
             "type": "object",
@@ -1693,6 +2168,9 @@
         "entity.Task": {
             "type": "object",
             "properties": {
+                "contacter": {
+                    "type": "integer"
+                },
                 "create_by": {
                     "type": "integer"
                 },
@@ -1708,16 +2186,38 @@
                 "id": {
                     "type": "integer"
                 },
+                "images": {
+                    "type": "string"
+                },
+                "leader": {
+                    "type": "integer"
+                },
                 "location": {
+                    "type": "string"
+                },
+                "max_user_count": {
+                    "type": "integer"
+                },
+                "meeting_at": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
+                "recorder": {
+                    "type": "integer"
+                },
                 "require": {
                     "type": "string"
                 },
+                "start_at": {
+                    "type": "string"
+                },
                 "status": {
+                    "type": "string"
+                },
+                "type": {
+                    "description": "type 表示任务的类型·。\nEnum: task,post\nDescription: 任务的类型可以task正常任务，或者是post通告。",
                     "type": "string"
                 }
             }
@@ -1821,6 +2321,10 @@
                 "address": {
                     "type": "string"
                 },
+                "avator_url": {
+                    "description": "用户头像信息",
+                    "type": "string"
+                },
                 "birthday": {
                     "type": "string"
                 },
@@ -1854,6 +2358,12 @@
                 "insurance_start": {
                     "type": "string"
                 },
+                "insurances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Insurance"
+                    }
+                },
                 "intro": {
                     "type": "string"
                 },
@@ -1869,9 +2379,6 @@
                 "mingzu": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "phone": {
                     "type": "string"
                 },
@@ -1882,6 +2389,9 @@
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 },
                 "wechat_name": {
@@ -1924,10 +2434,36 @@
         "entity.UserTaskSummary": {
             "type": "object",
             "properties": {
-                "total_duration": {
+                "total_task_duration": {
+                    "description": "总任务时长",
                     "type": "integer"
                 },
-                "total_task": {
+                "total_task_num": {
+                    "description": "总任务数",
+                    "type": "integer"
+                },
+                "user_task_summary_list": {
+                    "description": "任务列表信息",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.UserTaskSummaryList"
+                    }
+                }
+            }
+        },
+        "entity.UserTaskSummaryList": {
+            "type": "object",
+            "properties": {
+                "task_id": {
+                    "description": "任务ID",
+                    "type": "integer"
+                },
+                "total_duration": {
+                    "description": "总任务时长,默认0",
+                    "type": "integer"
+                },
+                "user_id": {
+                    "description": "用户ID",
                     "type": "integer"
                 }
             }
@@ -2048,9 +2584,6 @@
         "v1.doMiniProgramLoginResponse": {
             "type": "object",
             "properties": {
-                "phone": {
-                    "type": "string"
-                },
                 "role": {
                     "type": "string"
                 },

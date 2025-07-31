@@ -23,7 +23,7 @@ import (
 // @title       Task Mini Program
 // @description Task Mini Program API
 // @version     1.0
-// @host        task.mytool.zone
+// @host        m.yllt.cc
 // @BasePath    /v1
 func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk usecase.Task, n usecase.Notice, fileUseCase *usecase.FileUseCase, auth auth.Auth) {
 	// Options
@@ -43,7 +43,7 @@ func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk useca
 	// Routers
 	hl := handler.Group("/v1")
 	jwt := middleware.JWT(auth)
-	checkRole := middleware.CheckRole(u)
+	checkRole := middleware.CheckRole(u, tk)
 
 	{
 		newTaskRoutes(hl, jwt, checkRole, tk, n)
@@ -53,7 +53,7 @@ func NewRouter(handler *gin.Engine, l logger.Interface, u usecase.User, tk useca
 	}
 
 	// Static files
-	//handler.StaticFS("/public", http.Dir("public"))
+	handler.StaticFS("/public", http.Dir("public"))
 	//handler.StaticFS("/.well-known", http.Dir("public/.well-known"))
 
 }

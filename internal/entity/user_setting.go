@@ -20,28 +20,32 @@ package entity
 
 // UserSetting 用户的基本信息
 type UserSetting struct {
-	UserID                string `json:"user_id"`
-	IntroUserID           string `json:"intro_user_id"`
-	Name                  string `json:"name"`
-	LoginName             string `json:"login_name"`
-	Sex                   string `json:"sex"`
-	Phone                 string `json:"phone"`
-	Birthday              string `json:"birthday"`
-	WechatName            string `json:"wechat_name"`
-	Married               string `json:"married"`
-	Idcard                string `json:"idcard"`
-	Education             string `json:"education"`
-	Email                 string `json:"email"`
-	Mingzu                string `json:"mingzu"`
-	Region                string `json:"region"`
-	Address               string `json:"address"`
-	EmergencyContact      string `json:"emergency_contact"`
-	EmergencyPhone        string `json:"emergency_phone"`
-	EmergencyRelationship string `json:"emergency_relationship"`
-	InsuranceStart        string `json:"insurance_start"`
-	InsuranceEnd          string `json:"insurance_end"`
-	Intro                 string `json:"intro"`
-	WorkCategory          string `json:"work_category"`
-	InsuranceName         string `json:"insurance_name"`
-	InsurancePhoto        string `json:"insurance_photo"`
+	UserID                string      `json:"user_id"`
+	UserCode              string      `json:"user_code"` //队员编码
+	IntroUserID           string      `json:"intro_user_id"`
+	Name                  string      `json:"username"`
+	LoginName             string      `json:"login_name"`
+	Sex                   string      `json:"sex"`
+	Phone                 string      `json:"phone"`
+	Birthday              string      `json:"birthday"`
+	WechatName            string      `json:"wechat_name"`
+	Married               string      `json:"married"`
+	IDCard                string      `json:"idcard"`
+	Education             string      `json:"education"`
+	Email                 string      `json:"email"`
+	Mingzu                string      `json:"mingzu"`
+	Region                string      `json:"region"`
+	Address               string      `json:"address"`
+	EmergencyContact      string      `json:"emergency_contact"`
+	EmergencyPhone        string      `json:"emergency_phone"`
+	EmergencyRelationship string      `json:"emergency_relationship"`
+	InsuranceStart        string      `json:"insurance_start"`
+	InsuranceEnd          string      `json:"insurance_end"`
+	Intro                 string      `json:"intro"`
+	WorkCategory          string      `json:"work_category"`
+	InsuranceName         string      `json:"insurance_name"`
+	InsurancePhoto        string      `json:"insurance_photo"`
+	Insurances            []Insurance `json:"insurances"`
+	AvatorUrl             string      `json:"avator_url"`  //用户头像信息
+	SystemRole            string      `json:"system_role"` //用户在系统中的角色
 }

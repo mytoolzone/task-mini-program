@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
@@ -9,30 +11,69 @@ import (
 	"github.com/mytoolzone/task-mini-program/internal/usecase"
 )
 
-var adminPaths = []string{
-	"/v1/task/auditTask",
-	"/v1/task/assignRole",
-	"/v1/task/auditUserTask",
-	"/v1/task/auditApplyTask",
+/*
+	 var adminPaths = []string{
+		"/v1/task/auditTask",
+		"/v1/task/assignRole",
+		"/v1/task/auditUserTask",
+		"/v1/task/auditApplyTask",
+	}
+*/
+var checkPathToRole = map[string][]string{
+	"/v1/task/auditTask":      {entity.UserRoleAdmin, entity.UserRoleCaptain},
+	"/v1/task/assignRole":     {entity.UserRoleAdmin, entity.UserTaskRoleLeader},
+	"/v1/task/auditApplyTask": {entity.UserRoleAdmin, entity.UserRoleTaskDeployer},
 }
 
 // CheckRole 检查用户角色是否有权限
-func CheckRole(userCase usecase.User) gin.HandlerFunc {
+func CheckRole(userCase usecase.User, taskCase usecase.Task) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 		userID := http_util.GetUserID(c)
 		var role = entity.UserRoleMember
-
+		// 系统角色
 		roleModel, err := userCase.GetUserRole(c, userID)
 		if err != nil {
 			glog.WithErr(err).Error("获取用户角色失败")
 		} else {
 			role = roleModel.Role
 		}
-
 		http_util.SetUserRole(c, role)
+
+		// 当前登录人的任务角色查询
+		var taskRole entity.UserTask
+		TaskId := c.Query("taskID")
+		// UserId := c.Query("userID")
+		if TaskId == "" {
+			var TaskParams struct {
+				TaskId int `json:"task_id"`
+				// UserId int `json:"user_id"`
+			}
+			if err := c.ShouldBindJSON(&TaskParams); err == nil {
+				taskRole, _ = taskCase.GetUserTaskRole(c, TaskParams.TaskId, userID)
+				glog.Infof("用户%d 在任务 %d 中的角色为 %s", userID, TaskParams.TaskId, taskRole.Role)
+			}
+		} else {
+			taskIdInt, _ := strconv.Atoi(TaskId)
+			// userIdInt, _ := strconv.Atoi(UserId)
+			taskRole, _ = taskCase.GetUserTaskRole(c, taskIdInt, userID)
+			glog.Infof("用户%d 在任务 %d 中的角色为 %s", userID, taskIdInt, taskRole.Role)
+		}
+		// 判断是否需要校验权限
+		if checkRoles, ok := checkPathToRole[path]; ok {
+			// 校验用户角色是否在允许的角色列表中
+			if !stringInSlice(role, checkRoles) && !stringInSlice(taskRole.Role, checkRoles) {
+				http_util.Error(c, app_code.New(app_code.ErrorForbidden, "系统角色为"+role+"/任务角色为"+taskRole.Role+"，没有权限访问"))
+				return
+			} else {
+				c.Next()
+			}
+		} else {
+			// 如果path不需要校验权限，直接放行
+			c.Next()
+		}
 		// 如果path需要管理员权限检查用户是否有管理员权限
-		if stringInSlice(path, adminPaths) {
+		/* if stringInSlice(path, adminPaths) {
 			if role == entity.UserRoleAdmin {
 				c.Next()
 			} else {
@@ -40,7 +81,7 @@ func CheckRole(userCase usecase.User) gin.HandlerFunc {
 			}
 		} else {
 			c.Next()
-		}
+		} */
 	}
 }
 

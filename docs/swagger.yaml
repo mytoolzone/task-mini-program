@@ -4,6 +4,7 @@ definitions:
     enum:
     - success
     - user_not_found
+    - find_user_list
     - password_error
     - service_error
     - auth_failed
@@ -27,6 +28,7 @@ definitions:
     x-enum-varnames:
     - Success
     - ErrorUserNotFound
+    - ErrorGetUserList
     - ErrorUserPassword
     - ErrorServerError
     - ErrorAuthFailed
@@ -46,6 +48,21 @@ definitions:
     - ErrorNotFound
     - ErrorTaskRunNotFound
     - ErrorCreateTask
+  entity.Insurance:
+    properties:
+      created_at:
+        type: string
+      end_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      start_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
   entity.Notice:
     properties:
       content:
@@ -63,6 +80,8 @@ definitions:
     type: object
   entity.Task:
     properties:
+      contacter:
+        type: integer
       create_by:
         type: integer
       created_at:
@@ -73,13 +92,31 @@ definitions:
         type: string
       id:
         type: integer
+      images:
+        type: string
+      leader:
+        type: integer
       location:
+        type: string
+      max_user_count:
+        type: integer
+      meeting_at:
         type: string
       name:
         type: string
+      recorder:
+        type: integer
       require:
         type: string
+      start_at:
+        type: string
       status:
+        type: string
+      type:
+        description: |-
+          type 表示任务的类型·。
+          Enum: task,post
+          Description: 任务的类型可以task正常任务，或者是post通告。
         type: string
     type: object
   entity.TaskRun:
@@ -147,6 +184,9 @@ definitions:
     properties:
       address:
         type: string
+      avator_url:
+        description: 用户头像信息
+        type: string
       birthday:
         type: string
       education:
@@ -169,6 +209,10 @@ definitions:
         type: string
       insurance_start:
         type: string
+      insurances:
+        items:
+          $ref: '#/definitions/entity.Insurance'
+        type: array
       intro:
         type: string
       intro_user_id:
@@ -179,8 +223,6 @@ definitions:
         type: string
       mingzu:
         type: string
-      name:
-        type: string
       phone:
         type: string
       region:
@@ -188,6 +230,8 @@ definitions:
       sex:
         type: string
       user_id:
+        type: string
+      username:
         type: string
       wechat_name:
         type: string
@@ -215,9 +259,28 @@ definitions:
     type: object
   entity.UserTaskSummary:
     properties:
-      total_duration:
+      total_task_duration:
+        description: 总任务时长
         type: integer
-      total_task:
+      total_task_num:
+        description: 总任务数
+        type: integer
+      user_task_summary_list:
+        description: 任务列表信息
+        items:
+          $ref: '#/definitions/entity.UserTaskSummaryList'
+        type: array
+    type: object
+  entity.UserTaskSummaryList:
+    properties:
+      task_id:
+        description: 任务ID
+        type: integer
+      total_duration:
+        description: 总任务时长,默认0
+        type: integer
+      user_id:
+        description: 用户ID
         type: integer
     type: object
   gorm.DeletedAt:
@@ -295,8 +358,6 @@ definitions:
     type: object
   v1.doMiniProgramLoginResponse:
     properties:
-      phone:
-        type: string
       role:
         type: string
       token:
@@ -330,7 +391,7 @@ definitions:
       url:
         type: string
     type: object
-host: task.mytool.zone
+host: m.yllt.cc
 info:
   contact: {}
   description: Task Mini Program API
@@ -479,6 +540,48 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: Apply task
+      tags:
+      - task
+  /task/approvedUsers:
+    get:
+      consumes:
+      - application/json
+      description: 获取任务参加人列表获取某个任务，已经审核通过的人列表, (1. 该接口用在分配角色环节. 2. 查看参加任务用户的角色）
+      operationId: approvedUsers-list
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.UserTask'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: approvedUsers list
       tags:
       - task
   /task/assignRole:
@@ -691,6 +794,46 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: Create task
+      tags:
+      - task
+  /task/currentUserRole:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前访问用户在某个任务的角色
+      operationId: currentUserRole
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserTask'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: currentUserRole
       tags:
       - task
   /task/detail:
@@ -1105,6 +1248,46 @@ paths:
       summary: User task list
       tags:
       - task
+  /task/userTask:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前访问用户在某个任务的详情
+      operationId: userTask
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: taskID
+        in: query
+        name: taskID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserTask'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: userTask
+      tags:
+      - task
   /task/userTasks:
     get:
       consumes:
@@ -1197,6 +1380,87 @@ paths:
       summary: Apply Task User list
       tags:
       - task
+  /user/addUserInsurance:
+    post:
+      consumes:
+      - application/json
+      description: 添加用户保险
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: json
+        in: body
+        name: param
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Insurance'
+      - description: insurance
+        in: body
+        name: insurance
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Insurance'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 添加用户保险
+      tags:
+      - 用户
+  /user/findUsers:
+    get:
+      consumes:
+      - application/json
+      description: 查询用户列表
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: username
+        in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entity.User'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 查询用户列表
+      tags:
+      - 用户
   /user/getSetting:
     get:
       consumes:
@@ -1229,6 +1493,45 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: 获取用户设置
+      tags:
+      - 用户
+  /user/getSettingByUserID:
+    get:
+      consumes:
+      - application/json
+      description: 通过userID获取用户设置
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/http_util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/entity.UserSetting'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 通过userID获取用户设置
       tags:
       - 用户
   /user/login:
@@ -1334,6 +1637,51 @@ paths:
           schema:
             $ref: '#/definitions/http_util.Response'
       summary: 注册
+      tags:
+      - 用户
+  /user/setUserRole:
+    post:
+      consumes:
+      - application/json
+      description: 管理员通过userID设置用户角色
+      parameters:
+      - description: jwt_token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: integer
+      - description: role
+        enum:
+        - captain
+        - member
+        - task_deployer
+        - task_user_auditor
+        - admin
+        in: query
+        name: role
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http_util.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http_util.Response'
+      summary: 管理员设置用户的角色
       tags:
       - 用户
   /user/updateSetting:

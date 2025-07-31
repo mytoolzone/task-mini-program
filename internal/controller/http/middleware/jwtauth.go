@@ -1,13 +1,14 @@
 package middleware
 
 import (
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/controller/http/http_util"
 	"github.com/mytoolzone/task-mini-program/pkg/auth"
-	"strings"
-	"time"
 )
 
 // JWT 自定义中间件
@@ -37,7 +38,7 @@ func JWT(authH auth.Auth) gin.HandlerFunc {
 		}
 
 		if code != app_code.Success {
-			http_util.Error(c, app_code.New(code, "auth failed"))
+			http_util.Error(c, app_code.New(code, app_code.GetErrMsg(code)))
 			c.Abort()
 			return
 		}

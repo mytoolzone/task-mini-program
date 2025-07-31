@@ -9,17 +9,8 @@ import (
 
 //go:generate mockgen -source=interfaces.go -destination=./mocks_test.go -package=usecase_test
 
+// repos
 type (
-	// User -.
-	User interface {
-		Login(ctx context.Context, username, password string) (entity.User, error)
-		Register(context.Context, entity.User) (entity.User, error)
-		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
-		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
-		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
-		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
-	}
-
 	// UserRepo -.
 	UserRepo interface {
 		Store(context.Context, *entity.User) error
@@ -29,6 +20,30 @@ type (
 		GetByUserName(ctx context.Context, username string) (entity.User, error)
 		GetByOpenId(ctx context.Context, id string) (user entity.User, exist bool, err error)
 		GetUserRole(ctx context.Context, id int) (entity.UserRole, error)
+		SetUserRole(ctx context.Context, id int, role string) error
+		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
+	}
+
+	// InsuranceRepo -.
+	InsuranceRepo interface {
+		AddInsurance(ctx context.Context, insurance entity.Insurance) error
+		GetInsuranceByUserID(ctx context.Context, userID int) ([]entity.Insurance, error)
+	}
+)
+
+type (
+	// User -.
+	User interface {
+		Login(ctx context.Context, username, password string) (entity.User, error)
+		Register(context.Context, entity.User) (entity.User, error)
+		UpdateSetting(ctx context.Context, userID int, setting entity.UserSetting) error
+		GetSettingByUserID(ctx context.Context, userID int) (entity.UserSetting, error)
+		MiniProgramLogin(ctx context.Context, code string) (entity.User, error)
+		GetUserRole(ctx context.Context, userID int) (entity.UserRole, error)
+		SetUserRole(ctx context.Context, id int, role string) error
+		FindUsersByName(ctx context.Context, username string) ([]entity.User, error)
+		AddUserInsurance(ctx context.Context, insurance entity.Insurance) error
+		GetUserInsurance(ctx context.Context, userID int) ([]entity.Insurance, error)
 	}
 
 	// Task -.
@@ -39,11 +54,11 @@ type (
 		// CreateTask 创建任务
 		CreateTask(context.Context, *entity.Task) error
 		// AuditTask 审核任务是否通过
-		AuditTask(ctx context.Context, taskID int, status string) (*entity.Task, error)
+		AuditTask(ctx context.Context, taskID int, status string, remark string) (*entity.Task, error)
 		// JoinTask 报名任务
 		JoinTask(ctx context.Context, taskID, userID int) error
 		// AuditUserTask 审核报名人员
-		AuditUserTask(ctx context.Context, taskID, userID int, status string) error
+		AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) error
 		// AssignRole 分配参加任务人员角色
 		AssignRole(ctx context.Context, taskID, userID int, role string) error
 		// PrepareTaskRun 准备开始子任务 返回子任务id 后续签到生产二维码使用 ,队长点击开始签到调用这个接口
@@ -62,35 +77,45 @@ type (
 		CancelTaskRun(ctx context.Context, taskID int) error
 		// GetTaskDetail 获取任务详情
 		GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error)
+		// GetTaskDetail 获取子任务详情
+		GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error)
 		// GetByUserID 获取一个人参与的任务
-		GetByUserID(ctx context.Context, userID int, status string, id int) ([]entity.Task, error)
+		GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
 		// GetByTaskID 获取一个任务的详情
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		// GetTaskList 任务大厅获取任务列表
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
-		// GetUserTasks 获取任务参与者列表
-		GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
+		// 审核人员专用得任务列表查询接口
+		GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
+		// GetUserTaskRole 获取一个人在某个任务的角色
+		GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error)
+		// GetTaskUsers 获取任务参与者列表
+		GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetTaskRunList 获取某个任务的子任务列表
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
 		// GetTaskRunLogList 获取某个任务的记录员上传的任务记录
 		GetTaskRunLogList(ctx context.Context, taskID, lastID int) ([]entity.TaskRunLog, error)
 		// GetUserJoinTaskList 获取某个用户参与的任务
-		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error)
+		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
 		// UploadRunLog 记录员上传任务记录
 		UploadRunLog(ctx context.Context, runLog entity.TaskRunLog) error
 		// GetUserTaskSummary 获取某个用户执行任务总数 总任务时长
-		GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error)
+		GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user, status string, page, page_size string) (entity.UserTaskSummary, error)
+		ExportTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error)
+		GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error)
+		GetApprovedTaskUsers(ctx context.Context, id int) ([]entity.UserTask, error)
 	}
 
 	// TaskRepo -.
 	TaskRepo interface {
 		CreateTask(context.Context, *entity.Task) error
-		GetByUserID(ctx context.Context, userID int, status string, id int) ([]entity.Task, error)
+		GetByUserID(ctx context.Context, userID int, status string, id int) (*entity.UserTaskMap, error)
 		GetByTaskID(ctx context.Context, taskID int) (entity.Task, error)
 		GetTaskList(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
+		GetTaskListByAudit(ctx context.Context, lastId int, keyword, status string) ([]entity.Task, error)
 
-		AuditFailTask(ctx context.Context, taskID int) (*entity.Task, error)
-		AuditSuccessTask(ctx context.Context, taskID int) (*entity.Task, error)
+		AuditFailTask(ctx context.Context, taskID int, remark string) (*entity.Task, error)
+		AuditSuccessTask(ctx context.Context, taskID int, remark string) (*entity.Task, error)
 		StartTask(ctx context.Context, taskID int) error
 		PauseTask(ctx context.Context, taskID int) error
 		FinishTask(ctx context.Context, taskID int) error
@@ -107,6 +132,8 @@ type (
 		FinishTaskRun(ctx context.Context, taskID int) error
 		GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error)
 		CancelTaskRun(ctx context.Context, id int) error
+		GetTaskLatestRun(ctx context.Context, id int) (entity.TaskRun, error)
+		GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error)
 	}
 
 	// TaskRunLogRepo -.
@@ -125,9 +152,12 @@ type (
 		StartTaskRun(ctx context.Context, taskID, taskRunID int) error
 		// FinishTaskRun 完成子任务执行时候调用
 		FinishTaskRun(ctx context.Context, taskID, taskRunID int) error
-		GetTaskRunUserList(ctx context.Context, taskID int) ([]entity.TaskRunUser, error)
+		// GetTaskRunUserList 获取签到用户
+		GetTaskRunUserList(ctx context.Context, taskID int, taskRunID int) ([]entity.TaskRunUser, error)
 		CancelTaskRun(ctx context.Context, id int, id2 int) error
-		GetUserTaskSummary(ctx context.Context, id int) (entity.UserTaskSummary, error)
+		GetUserTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user, status string, page, page_size string) (entity.UserTaskSummary, error)
+		ExportTaskSummary(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error)
+		GetUserTaskSummaryDetail(ctx context.Context, id int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error)
 	}
 
 	// UserTaskRepo -.
@@ -136,15 +166,17 @@ type (
 		// AddUserTask 用户报名参与任务
 		AddUserTask(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// AuditUserTask 审核任务参与者
-		AuditUserTask(ctx context.Context, taskID, userID int, status string) (entity.UserTask, error)
+		AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) (entity.UserTask, error)
 		// AssignRole 分配用户在任务中角色
 		AssignRole(ctx context.Context, taskID, userID int, role string) error
-		// GetUserTaskList 获取任务参与者列表
+		// GetTaskUserList 获取任务参与者列表
 		GetTaskUserList(ctx context.Context, taskID int, status string) ([]entity.UserTask, error)
 		// GetUserTaskByUserID 获取任务参与者状态
 		GetUserTaskByUserID(ctx context.Context, taskID, userID int) (entity.UserTask, error)
 		// GetUserJoinTaskList 获取某个用户参与的任务列表
-		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error)
+		GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error)
+		// GetTaskLeader 分配用户在任务中角色
+		GetTaskLeader(ctx context.Context, taskID int) (entity.UserTask, bool, error)
 	}
 
 	// Notice -.

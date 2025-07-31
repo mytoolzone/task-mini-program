@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"errors"
+
 	"github.com/gw123/glog"
 	"github.com/mytoolzone/task-mini-program/internal/app_code"
 	"github.com/mytoolzone/task-mini-program/internal/entity"
@@ -34,8 +35,11 @@ func (t TaskUseCase) CreateTask(ctx context.Context, task *entity.Task) error {
 func (t TaskUseCase) GetTaskDetail(ctx context.Context, taskID int) (entity.Task, error) {
 	return t.t.GetByTaskID(ctx, taskID)
 }
+func (t TaskUseCase) GetTaskRunDetail(ctx context.Context, taskRunID int) (entity.TaskRun, error) {
+	return t.tr.GetTaskRunDetail(ctx, taskRunID)
+}
 
-func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) ([]entity.Task, error) {
+func (t TaskUseCase) GetByUserID(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	return t.t.GetByUserID(ctx, userID, status, lastID)
 }
 
@@ -46,9 +50,56 @@ func (t TaskUseCase) GetByTaskID(ctx context.Context, taskID int) (entity.Task, 
 func (t TaskUseCase) GetTaskList(ctx context.Context, lastID int, keyword, status string) ([]entity.Task, error) {
 	return t.t.GetTaskList(ctx, lastID, keyword, status)
 }
+func (t TaskUseCase) GetTaskListByAudit(ctx context.Context, lastID int, keyword, status string) ([]entity.Task, error) {
+	return t.t.GetTaskListByAudit(ctx, lastID, keyword, status)
+}
 
-func (t TaskUseCase) GetUserTasks(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
-	return t.tu.GetTaskUserList(ctx, taskID, status)
+func (t TaskUseCase) GetTaskUsers(ctx context.Context, taskID int, status string) ([]entity.UserTask, error) {
+	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, status)
+	if err != nil {
+		return nil, err
+	}
+	return taskUserList, err
+}
+
+func (t TaskUseCase) GetApprovedTaskUsers(ctx context.Context, taskID int) ([]entity.UserTask, error) {
+	// 查询报名审核过的人员
+	taskUserList, err := t.tu.GetTaskUserList(ctx, taskID, entity.UserTaskStatusAuditPass)
+	if err != nil {
+		return nil, err
+	}
+	// 查询最后一次子任务
+	tr, err := t.tr.GetTaskLatestRun(ctx, taskID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, err
+	}
+	// 循环遍历人员列表，设置状态为未签到
+	for index, _ := range taskUserList {
+		taskUserList[index].Status = entity.TaskStatusNotSign
+	}
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return taskUserList, nil
+	}
+	// 查询子任务签到的人员列表
+	taskRunUserList, err := t.tru.GetTaskRunUserList(ctx, taskID, tr.ID)
+	if err != nil {
+		return nil, err
+	}
+	// 将其签到人员的状态设置为已签到
+	for index, _ := range taskUserList {
+		for _, tru := range taskRunUserList {
+			if taskUserList[index].UserID == tru.UserID {
+				taskUserList[index].Status = entity.TaskStatusSign
+			}
+		}
+	}
+
+	return taskUserList, nil
+}
+
+func (t TaskUseCase) GetUserTaskRole(ctx context.Context, taskID, userID int) (entity.UserTask, error) {
+	return t.tu.GetUserTaskByUserID(ctx, taskID, userID)
 }
 
 func (t TaskUseCase) GetTaskRunList(ctx context.Context, taskID int) ([]entity.TaskRun, error) {
@@ -116,6 +167,20 @@ func (t TaskUseCase) PrepareTaskRun(ctx context.Context, taskID int) (int, error
 	if err != nil {
 		return 0, err
 	}
+
+	{
+		// 队长自动签到
+		leader, ok, err := t.tu.GetTaskLeader(ctx, taskID)
+		if !ok {
+			return 0, errors.New("获取任务队长失败")
+		}
+
+		_, err = t.tru.AddTaskRunUser(ctx, taskID, taskRun.ID, leader.UserID)
+		if err != nil {
+			return 0, err
+		}
+	}
+
 	return taskRun.ID, nil
 }
 
@@ -200,7 +265,7 @@ func (t TaskUseCase) FinishTaskRun(ctx context.Context, taskID int) error {
 	}
 
 	if task.Status == entity.TaskStatusRunning {
-		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
+		run, err := t.tr.GetRunningTaskRun(ctx, taskID) //子任务ID的数据
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return app_code.New(app_code.ErrorTaskRunNotFound, "没有正在执行中任务")
@@ -234,7 +299,7 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 		return err
 	}
 
-	if task.Status == entity.TaskStatusRunning {
+	if task.Type == entity.TaskTypeTask && task.Status == entity.TaskStatusRunning {
 		run, err := t.tr.GetRunningTaskRun(ctx, taskID)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -260,15 +325,15 @@ func (t TaskUseCase) CancelTaskRun(ctx context.Context, taskID int) error {
 	return nil
 }
 
-func (t TaskUseCase) AuditTask(ctx context.Context, taskID int, status string) (*entity.Task, error) {
+func (t TaskUseCase) AuditTask(ctx context.Context, taskID int, status string, remark string) (*entity.Task, error) {
 	var err error
 	var task *entity.Task
 	switch status {
 	case entity.StatusAuditReject:
-		task, err = t.t.AuditFailTask(ctx, taskID)
+		task, err = t.t.AuditFailTask(ctx, taskID, remark)
 
 	case entity.StatusAuditApproved:
-		task, err = t.t.AuditSuccessTask(ctx, taskID)
+		task, err = t.t.AuditSuccessTask(ctx, taskID, remark)
 	default:
 		err = errors.New("arg status not found")
 	}
@@ -294,14 +359,14 @@ func (t TaskUseCase) JoinTask(ctx context.Context, taskID, userID int) error {
 	return err
 }
 
-func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, status string) error {
+func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, status string, remark string) error {
 	var err error
 	switch status {
 	case entity.UserTaskStatusAuditFail:
-		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status, remark)
 
 	case entity.UserTaskStatusAuditPass:
-		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status)
+		_, err = t.tu.AuditUserTask(ctx, taskID, userID, status, remark)
 
 	default:
 		err = app_code.New(app_code.ErrorBadRequest, "arg status not valid")
@@ -313,11 +378,19 @@ func (t TaskUseCase) AuditUserTask(ctx context.Context, taskID, userID int, stat
 	return nil
 }
 
-func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int) (entity.UserTaskSummary, error) {
-	return t.tru.GetUserTaskSummary(ctx, userID)
+func (t TaskUseCase) GetUserTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user, status string, page, page_size string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, status, page, page_size)
+}
+func (t TaskUseCase) GetUserTaskSummaryDetail(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string) (entity.UserTaskSummary, error) {
+	return t.tru.GetUserTaskSummaryDetail(ctx, userID, startTime, endTime, taskID, taskName, is_group_user)
 }
 
-func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) ([]entity.UserTask, error) {
+// 导出任务工时
+func (t TaskUseCase) ExportTaskSummary(ctx context.Context, userID int, startTime, endTime string, taskID int, taskName, is_group_user string, page, page_size string) (entity.ExportResult, error) {
+	return t.tru.ExportTaskSummary(ctx, userID, startTime, endTime, taskID, taskName, is_group_user, page, page_size)
+}
+
+func (t TaskUseCase) GetUserJoinTaskList(ctx context.Context, userID int, status string, lastID int) (*entity.UserTaskMap, error) {
 	return t.tu.GetUserJoinTaskList(ctx, userID, status, lastID)
 }
 
